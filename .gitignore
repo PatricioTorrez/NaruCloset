@@ -1,0 +1,43 @@
+# Dependencias
+node_modules/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Entorno (solo se versiona .env.example)
+.env
+.env.*
+!.env.example
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
+
+# Pruebas
+coverage/
+playwright-report/
+test-results/
+
+# Logs y sistema
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Editores (se conservan los archivos compartidos de .idea)
+.idea/workspace.xml
+.idea/shelf/
+.idea/httpRequests/
+.idea/dataSources/
+.idea/dataSources.local.xml
+.vscode/
+
+# Skills duplicadas para otros agentes (D-008: solo se versiona .claude/skills/)
+.agents/
+.aider-desk/
+
+# Claude Code local
+.claude/settings.local.json
