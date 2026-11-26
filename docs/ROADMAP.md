@@ -14,8 +14,8 @@
 
 ## Flujo de trabajo
 
-- La Fase 1 se sube directamente a `main` (el repositorio estaba vacío).
-- Desde la Fase 2, cada fase se desarrolla en una rama `fase-N-nombre` y se integra con un Pull Request revisado por el dueño (D-009).
+- Todo se sube con commit y push directo a `main`; no se usan ramas por fase (D-015).
+- Las fases se completan una tras otra; cada una termina con su puerta de calidad en verde y un commit.
 
 ## Ideas fuera de alcance (no se implementan sin aprobación)
 

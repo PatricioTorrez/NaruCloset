@@ -33,7 +33,7 @@
 | id | uuid PK | FK → `auth.users.id` |
 | full_name | text | no nulo |
 | role | user_role | no nulo, default `staff` |
-| is_active | boolean | default `true`. Para quitar acceso se desactiva; no se borra (conserva la autoría del historial) |
+| is_active | boolean | default `false`: un usuario invitado no tiene acceso hasta que un owner lo active. Para quitar acceso se desactiva; no se borra |
 | created_at, updated_at | timestamptz | |
 
 **`store_settings`** — una sola fila (`id boolean PK default true check (id)`)
@@ -85,7 +85,7 @@
 | Columna | Tipo | Reglas |
 |---|---|---|
 | id | uuid PK | |
-| product_id | uuid | FK → products, restrict |
+| product_id | uuid | FK → products, **cascade** (sin historial se borra con su producto; con historial, las FK restrict de movimientos y ventas lo impiden y se archiva) |
 | color_id | uuid | FK → colors, restrict |
 | size_id | uuid | FK → sizes, restrict |
 | sku | text | único, opcional |
@@ -115,7 +115,10 @@ Las columnas `stock_*` **no se pueden actualizar** fuera de las funciones de inv
 id, received_at, supplier (opcional), notes, created_by, created_at.
 
 **`stock_entry_items`**
-id, stock_entry_id, variant_id, quantity (> 0), unit_cost (numeric, opcional, **solo para el panel**).
+id, stock_entry_id, variant_id, quantity (> 0).
+
+**`stock_entry_item_costs`** (auxiliar: separa el costo para que solo el owner lo lea por RLS)
+stock_entry_item_id (PK/FK), unit_cost (≥ 0).
 
 **`inventory_movements`** — **solo inserción**
 | Columna | Tipo | Notas |
@@ -153,7 +156,7 @@ Las ventas **nunca se borran**: se cancelan (`cancel_sale`) o se registran devol
 ## 4. Índices principales
 
 - `products (category_id)`, `products (audience)`, `products (created_at desc)`; índice parcial para el catálogo `where is_active and archived_at is null`.
-- `products using gin (name gin_trgm_ops)` para la búsqueda por nombre (extensión `pg_trgm`).
+- Búsqueda por nombre con `unaccent` + `ilike` en `catalog_products()` (catálogo pequeño; sin índice trigram por ahora).
 - `product_variants (product_id)`, `(color_id)`, `(size_id)`.
 - `product_images (product_id, sort_order)`.
 - `inventory_movements (variant_id, created_at desc)`, `(created_at desc)`.
@@ -178,6 +181,14 @@ Todas son `security definer`, con `set search_path = ''`. Verifican el rol al in
 | `adjust_stock(variant_id, new_on_hand, reason, type)` | **owner** | Ajuste manual o corrección con motivo obligatorio |
 
 Política de disponibilidad (D-002): `stock_available = on_hand − reserved`. Ventas y nuevos apartados nunca superan `stock_available`, así que no se pueden vender unidades apartadas.
+
+## 5.1 Consultas
+
+| Función | Seguridad | Uso |
+|---|---|---|
+| `catalog_products(search, category, audience, size_ids, color_ids, only_available, only_new, only_featured, sort, limit, offset)` | invoker (RLS) | Catálogo público con filtros reales, orden y paginación |
+| `admin_dashboard(days)` | invoker (RLS) | Indicadores del panel calculados con datos reales |
+| `current_admin()` | definer | Perfil activo de la sesión |
 
 ## 6. Protección de existencias
 

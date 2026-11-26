@@ -33,6 +33,9 @@ Administrador ─► Next.js · /admin (sesión Supabase Auth, middleware, Serve
 | A8 | Sin carrito ni pagos; el contacto es un enlace `wa.me` con el producto y la variante prellenados | Es el modelo de negocio definido |
 | A9 | Código portable entre proveedores (sin APIs exclusivas de Vercel) | El hosting se decide en la Fase 6 (D-001) |
 | A10 | npm como gestor de paquetes | Ya está instalado; pnpm no |
+| A11 | Sin Docker (D-016): Supabase en la nube; `scripts/db.mjs`, `scripts/run-sql-tests.mjs` y `scripts/test-concurrency.mjs` reemplazan a `supabase start` / `supabase test db` | Decisión del dueño |
+| A12 | Next.js 16: `src/proxy.ts` (antes middleware) solo refresca la sesión y redirige `/admin` sin sesión; Cache Components activado | Convenciones de la versión instalada |
+| A13 | Primitivos de UI propios (`src/components/ui`) en lugar de shadcn/ui (D-017) | Menos dependencias; `<dialog>` nativo ya es accesible |
 
 ## 3. Estructura de carpetas (objetivo)
 
@@ -86,6 +89,7 @@ NaruCloset/
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | cliente + servidor | URL del proyecto Supabase |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | cliente + servidor | Clave publishable/anon. Es segura porque todo está protegido por RLS |
+| `SUPABASE_DB_URL` | **solo scripts** | Cadena de conexión (Session pooler) para migraciones y pruebas SQL |
 | `SUPABASE_SECRET_KEY` | **solo scripts del servidor** | Clave secret/service_role. Se usa únicamente para crear el primer usuario `owner`. Nunca lleva el prefijo `NEXT_PUBLIC_` ni se importa en código de cliente |
 | `NEXT_PUBLIC_SITE_URL` | cliente + servidor | URL canónica para SEO, sitemap y Open Graph |
 

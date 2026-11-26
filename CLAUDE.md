@@ -18,11 +18,14 @@ Requisitos completos: `docs/PROJECT_BRIEF.md`.
 - Actualizar `docs/PROJECT_CONTEXT.md` (fase, estado, siguiente paso, fecha).
 - Si cambió algo visible o importante, actualizar `docs/CHANGELOG.md`.
 
-No avanzar a otra fase sin la aprobación del usuario. No tomar decisiones marcadas como *Pendiente* en `DECISIONS.md`.
+El dueño autorizó (2026-11-26) completar las fases 2–6 una tras otra. No tomar decisiones marcadas como *Pendiente* en `DECISIONS.md`.
+
+@AGENTS.md
 
 ## Stack
 
-Next.js (App Router) · TypeScript · Tailwind CSS · shadcn/ui · Lucide · Supabase (Postgres, Auth, Storage, RLS) · Zod · React Hook Form · Recharts.
+Next.js 16 (App Router, Cache Components) · React 19 · TypeScript · Tailwind CSS 4 · Lucide · Supabase (Postgres, Auth, Storage, RLS) · Zod · Vitest · Playwright · pgTAP.
+Sin shadcn/ui, React Hook Form ni Recharts (D-017): primitivos propios en `src/components/ui`.
 Gestor de paquetes: **npm**.
 
 ## Reglas clave
@@ -39,4 +42,23 @@ Gestor de paquetes: **npm**.
 
 ## Comandos
 
-_(Se completan en la Fase 2, cuando exista la aplicación.)_
+Sin Docker (D-016). La base es Supabase en la nube; credenciales en `.env.local` (ver `.env.example`).
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run typecheck` | Tipos de rutas + `tsc --noEmit` |
+| `npm run lint` | ESLint |
+| `npm test` | Pruebas unitarias (Vitest) |
+| `npm run test:db` | Pruebas pgTAP de inventario y RLS (BEGIN … ROLLBACK, no dejan datos) |
+| `npm run test:concurrency` | Prueba I-6: ventas simultáneas de la última unidad |
+| `npm run test:e2e` | Playwright (solo lectura) en móvil, tablet y escritorio |
+| `npm run check` | Puerta de calidad: typecheck + lint + test + build |
+| `npm run db:push` | Aplica migraciones a la base (operación sobre la base: pedir autorización) |
+| `npm run db:types` | Regenera `src/types/database.ts` |
+| `npm run create-owner -- correo "Nombre"` | Crea o promueve el primer owner |
+
+## Notas de la versión
+
+- Next.js 16: leer `node_modules/next/dist/docs/` antes de usar APIs nuevas (ver `AGENTS.md`). `src/proxy.ts` reemplaza a middleware. Cache Components activo: lecturas públicas con `'use cache'` + `cacheTag`, invalidación con `updateTag` (en `src/lib/actions/guard.ts`); todo lo que lea cookies va dentro de `<Suspense>`.
+- Git: commits y push directo a `main` (D-015).

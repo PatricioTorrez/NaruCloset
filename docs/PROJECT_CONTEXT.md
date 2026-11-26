@@ -12,16 +12,15 @@ Especificación completa: [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md) (fuente de verd
 
 ## Estado actual
 
-- **Fase:** 1 completada → siguiente: **Fase 2 — Fundamentos** (rama `fase-2-fundamentos`, PR a `main`).
-- **Código de aplicación:** ninguno todavía; documentación técnica completa en `docs/`.
-- **Repositorio:** `github.com/PatricioTorrez/NaruCloset` (privado), rama `main` con la Fase 1.
-- **Supabase:** sin proyecto conectado. Desarrollo previsto en local con Docker.
+- **Fases 2–5 y parte de la 6:** código implementado; TypeScript, ESLint y Vitest en verde.
+- **Sin verificar contra la base:** falta `.env.local` con el proyecto Supabase en la nube (D-016, sin Docker). Hasta entonces no se han aplicado migraciones ni corrido `test:db`, `test:concurrency`, `build` ni E2E.
+- **Repositorio:** `github.com/PatricioTorrez/NaruCloset` (privado), commits directos a `main` (D-015).
 - **Hosting:** se decide en la Fase 6 (D-001).
-- **Decisiones D-001…D-013:** aprobadas. Pendiente: D-014 (tono de rosa para texto).
+- **Decisiones:** D-001…D-019 aprobadas. Pendiente: D-014 (tono de rosa para texto).
 
 ## Stack previsto
 
-Next.js (App Router) · React · TypeScript · Tailwind CSS · shadcn/ui · Lucide · Supabase (Postgres, Auth, Storage, RLS) · Zod · React Hook Form · Recharts · Vitest · pgTAP · Playwright.
+Next.js 16 · React 19 · TypeScript · Tailwind CSS 4 · Lucide · Supabase (Postgres, Auth, Storage, RLS) · Zod · Vitest · pgTAP · Playwright.
 
 ## Entorno de desarrollo verificado (2026-11-26)
 
@@ -35,7 +34,9 @@ Node 24.19 · npm 11.17 · Git 2.56 · Docker 29.7 · Supabase CLI 3.4.0 (vía `
 
 ## Siguiente paso
 
-Iniciar la Fase 2 cuando el dueño lo autorice: F2-01 (crear app Next.js) → F2-10. Ver `TASKS.md`.
+1. El dueño crea el proyecto Supabase y `.env.local`.
+2. `npm run db:push` → `npm run test:db` → `npm run test:concurrency` → `npm run create-owner` → `npm run build` → E2E y revisión visual.
+3. Corregir lo que falle, cerrar fases en `TASKS.md`, completar Fase 6.
 
 ## Archivos de seguimiento
 

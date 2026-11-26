@@ -24,10 +24,15 @@ El dueño aprobó el 2026-11-26 todas las recomendaciones de la auditoría ("Tú
 | D-006 | Las tallas son un catálogo editable desde el panel (letras, números o talla única) | 2026-11-26 |
 | D-007 | Variantes = color + talla, extensibles con una migración (`DATABASE.md` §7) | 2026-11-26 |
 | D-008 | Se versiona solo `.claude/skills/`; `.agents/` y `.aider-desk/` se excluyen | 2026-11-26 |
-| D-009 | La Fase 1 va directo a `main` (repositorio vacío). Desde la Fase 2: una rama y un PR por fase | 2026-11-26 |
+| D-009 | ~~Una rama y un PR por fase~~ **Reemplazada por D-015** | 2026-11-26 |
 | D-010 | Desarrollo con Supabase local (Docker) primero. Al pasar a la nube se agrega una tarea anti-pausa gratuita | 2026-11-26 |
 | D-011 | Sin material de marca: espacios neutros y textos editables, sin fotos de stock que parezcan productos reales | 2026-11-26 |
 | D-012 | El proyecto se sube a `github.com/PatricioTorrez/NaruCloset`, rama `main` | 2026-11-26 |
+| D-015 | **Sin ramas por fase.** Todo el trabajo va con commit y push directo a `main` del repositorio NaruCloset. Las fases se completan una tras otra sin esperar revisión intermedia | 2026-11-26 |
+| D-016 | **Sin Docker.** La base de desarrollo y producción es un proyecto Supabase en la nube (plan gratuito). Migraciones con `npm run db:push`, pruebas SQL con un runner propio en Node (`npm run test:db`) | 2026-11-26 |
+| D-017 | Sin shadcn/ui, React Hook Form ni Recharts: primitivos propios con `<dialog>` nativo, `useActionState` + Zod en servidor y una gráfica HTML propia. Menos dependencias, mismo resultado | 2026-11-26 |
+| D-018 | Next.js 16 con Cache Components: catálogo con `use cache` + `cacheTag`, invalidado con `updateTag` desde las Server Actions; perfil `catalog` (revalidación 60 s) | 2026-11-26 |
+| D-019 | Gráfica del panel en Dusty Rose: única serie; mejor croma de la paleta, banda de luminosidad y contraste ≥ 3:1 validados | 2026-11-26 |
 | D-013 | Mantener los archivos MD de contexto (`PROJECT_CONTEXT`, `TASKS`, `DECISIONS`, `SESSION_LOG`) actualizados en cada sesión | 2026-11-26 |
 
 ## Decisiones técnicas de arquitectura

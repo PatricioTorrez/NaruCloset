@@ -6,7 +6,17 @@
 
 ## En curso
 
-_(ninguna; siguiente: F2-01)_
+- [ ] V-DB — Verificar contra Supabase: `db:push`, `test:db`, `test:concurrency`, `build`, E2E y revisión visual. **Bloqueado: falta `.env.local` con credenciales del proyecto en la nube.**
+
+## Implementado, pendiente de verificación contra la base
+
+Código escrito; TypeScript, ESLint y Vitest en verde. No se marcan como finalizadas hasta pasar las pruebas de base y el build.
+
+- F2-01…F2-10 — Next.js 16, tokens de marca, primitivos de UI (sin shadcn, D-017), migraciones (esquema, RLS, inventario, storage + pg_cron, catálogo, dashboard), pruebas pgTAP, prueba de concurrencia, login del panel y proxy.
+- F3-01…F3-07 — Layout público, inicio, catálogo con filtros/orden/paginación en URL, colecciones, detalle con selector de variante y WhatsApp, Nosotros, Contacto, 404 y error.
+- F4-01…F4-07 — Panel: navegación, resumen con indicadores reales y gráfica, productos, variantes, categorías, colores y tallas, fotografías (WebP en navegador), configuración y usuarios.
+- F5-01…F5-05 — Entradas, ventas, cancelación, devoluciones, apartados (confirmar, completar, cancelar, vencimiento automático), ajustes (owner) e historial.
+- F6-01 — Metadatos, Open Graph, sitemap, robots, JSON-LD de producto, cabeceras de seguridad.
 
 ## Bloqueadas
 
@@ -15,7 +25,7 @@ _(ninguna)_
 ## Pendientes
 
 
-### Fase 2 — Fundamentos (rama `fase-2-fundamentos`)
+### Fase 2 — Fundamentos
 - [ ] F2-01 — Crear app Next.js + TypeScript + Tailwind + ESLint
 - [ ] F2-02 — Tokens de marca (colores, tipografías Playfair Display / DM Sans, espaciado 8 px)
 - [ ] F2-03 — shadcn/ui base

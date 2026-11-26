@@ -5,7 +5,8 @@
 ## 1. Autenticación
 
 - Supabase Auth con correo y contraseña. Las contraseñas las gestiona Supabase; nunca se guardan en tablas propias.
-- **Registro público desactivado.** Los usuarios se crean por invitación desde el panel de Supabase. El primer `owner` se crea con un script de servidor que usa `SUPABASE_SECRET_KEY`.
+- **Registro público desactivado**: `enable_signup: false` en `supabase/config.jsonc`; en la nube, Authentication → Sign In / Providers → desactivar *Allow new users to sign up*. Un usuario invitado queda con perfil **inactivo** hasta que un owner lo active.
+- Los usuarios se invitan desde el panel de Supabase. El primer `owner` se crea con `npm run create-owner`, que usa `SUPABASE_SECRET_KEY` solo en la terminal.
 - La sesión vive en cookies httpOnly gestionadas por `@supabase/ssr`. El middleware solo refresca la sesión.
 - En el servidor la identidad se verifica con `supabase.auth.getUser()` o `getClaims()`, que validan contra Auth. Nunca se confía en `getSession()` para autorizar.
 
@@ -40,9 +41,10 @@ RLS está **activado en todas las tablas** de `public`. Funciones auxiliares en 
 | products | SELECT `is_active and archived_at is null` | ALL (sin DELETE si hay historial, lo impiden las FK) | ALL |
 | product_variants | SELECT activas de productos visibles | INSERT/UPDATE de datos no relacionados con existencias | ídem |
 | product_images | SELECT de productos visibles | ALL | ALL |
-| store_settings | SELECT (vista `public_store_settings`, sin `updated_by`) | SELECT | SELECT/UPDATE |
-| profiles | — | SELECT el propio | SELECT/UPDATE |
-| stock_entries, stock_entry_items | — | SELECT (sin `unit_cost`, mediante una vista) | SELECT |
+| store_settings | SELECT (solo datos públicos de la tienda) | SELECT | SELECT/UPDATE |
+| profiles | — | SELECT (nombres, para autoría del historial) | SELECT/UPDATE |
+| stock_entries, stock_entry_items | — | SELECT | SELECT |
+| stock_entry_item_costs | — | — | SELECT |
 | inventory_movements | — | SELECT | SELECT |
 | sales, sale_items, sale_returns*, reservations* | — | SELECT | SELECT |
 

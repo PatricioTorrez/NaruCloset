@@ -4,6 +4,22 @@
 
 ---
 
+## 2026-11-26 — Sesión 1 (continuación): Fases 2–6 implementadas
+
+**Hecho**
+- El dueño pidió completar todas las fases y subir directo a `main` sin ramas (D-015) y no usar Docker (D-016): Supabase en la nube.
+- Next.js 16.4 (Cache Components, `proxy.ts`), 6 migraciones SQL, sitio público completo, panel completo, pruebas pgTAP con runner propio sin Docker, prueba de concurrencia, E2E de solo lectura, SEO.
+- Se quitaron dependencias sin uso (react-hook-form, resolvers); no se instaló shadcn ni Recharts (D-017).
+
+**Pendiente**
+- `.env.local` con credenciales → aplicar migraciones y ejecutar todas las verificaciones.
+
+**Notas / riesgos**
+- El build pre-renderiza el catálogo: necesita la base accesible durante el build.
+- Los tipos `src/types/database.ts` están escritos a mano; regenerarlos con `npm run db:types` (requiere `npx supabase login`).
+
+---
+
 ## 2026-11-26 — Sesión 1 (continuación): cierre de la Fase 1
 
 **Hecho**
