@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useState } from 'react';
+import { useFormAction } from '@/components/ui/use-form-action';
 import { saveProduct } from '@/lib/actions/catalog';
 import { Button } from '@/components/ui/button';
 import { Checkbox, Field, FormMessage, Input, Select, Textarea } from '@/components/ui/form';
@@ -27,7 +28,7 @@ export function ProductForm({
   product?: Product;
   categories: { id: string; name: string }[];
 }) {
-  const [state, action, pending] = useActionState(saveProduct, null);
+  const [state, onSubmit, pending] = useFormAction(saveProduct);
   const [name, setName] = useState(product?.name ?? '');
   const [slug, setSlug] = useState(product?.slug ?? '');
   const [slugTouched, setSlugTouched] = useState(Boolean(product));
@@ -44,7 +45,7 @@ export function ProductForm({
   }
 
   return (
-    <form action={action} className="flex flex-col gap-5" noValidate>
+    <form onSubmit={onSubmit} className="flex flex-col gap-5" noValidate>
       {product && <input type="hidden" name="id" value={product.id} />}
       <div className="grid gap-5 md:grid-cols-2">
         <Field label="Nombre" htmlFor="name" error={err('name')} className="md:col-span-2">

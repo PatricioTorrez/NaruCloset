@@ -5,6 +5,9 @@ import { createClient } from '@/lib/supabase/server';
 import { getVariantOptions } from '@/lib/queries/admin';
 import { ReservationForm } from './reservation-form';
 
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
+
 export const metadata: Metadata = { title: 'Nuevo apartado' };
 
 export default async function NewReservationPage() {

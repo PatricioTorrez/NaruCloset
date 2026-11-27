@@ -16,10 +16,12 @@ test.describe('sitio público', () => {
     });
   }
 
-  test('producto inexistente devuelve 404 con salida al catálogo', async ({ page }) => {
-    const res = await page.goto('/producto/no-existe-este-producto');
-    expect(res?.status()).toBe(404);
-    await expect(page.getByRole('link', { name: 'Ir al catálogo' })).toBeVisible();
+  // Con prerender parcial, notFound() ocurre durante el streaming: el estado HTTP ya es 200,
+  // pero Next.js agrega <meta name="robots" content="noindex"> y muestra la página de no encontrado.
+  test('producto inexistente muestra "no existe" y no se indexa', async ({ page }) => {
+    await page.goto('/producto/no-existe-este-producto');
+    await expect(page.getByRole('heading', { name: 'Esta página no existe' })).toBeVisible();
+    await expect(page.locator('meta[name="robots"][content*="noindex"]')).toHaveCount(1);
   });
 
   test('los filtros viajan en la URL y se pueden quitar', async ({ page }) => {

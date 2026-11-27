@@ -56,7 +56,7 @@ Sin Docker (D-016). La base es Supabase en la nube; credenciales en `.env.local`
 | `npm run check` | Puerta de calidad: typecheck + lint + test + build |
 | `npm run db:push` | Aplica migraciones a la base (operación sobre la base: pedir autorización) |
 | `npm run db:types` | Regenera `src/types/database.ts` |
-| `npm run create-owner -- correo "Nombre"` | Crea o promueve el primer owner |
+| `npm run create-owner -- correo "Nombre"` | Promueve a owner un usuario creado en Supabase (no maneja contraseñas) |
 
 ## Notas de la versión
 

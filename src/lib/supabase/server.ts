@@ -1,5 +1,6 @@
 import 'server-only';
 import { cookies } from 'next/headers';
+import { connection } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import type { Database } from '@/types/database';
 import { env } from '@/lib/env';
@@ -9,6 +10,8 @@ import { env } from '@/lib/env';
  * No se puede usar dentro de funciones con 'use cache'.
  */
 export async function createClient() {
+  // Tiempo de petición: la sesión depende de cookies y de la hora actual (vigencia del token).
+  await connection();
   const cookieStore = await cookies();
 
   return createServerClient<Database>(env.supabaseUrl, env.supabasePublishableKey, {

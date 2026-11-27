@@ -10,6 +10,9 @@ import { createClient } from '@/lib/supabase/server';
 import { AUDIENCE_LABEL, formatPrice } from '@/lib/format';
 import { publicImageUrl } from '@/lib/env';
 
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
+
 export const metadata: Metadata = { title: 'Productos' };
 
 const STATUS = ['activos', 'inactivos', 'archivados', 'todos'] as const;

@@ -4,6 +4,9 @@ import { EmptyState } from '@/components/ui/misc';
 import { getVariantOptions } from '@/lib/queries/admin';
 import { SaleForm } from './sale-form';
 
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
+
 export const metadata: Metadata = { title: 'Nueva venta' };
 
 export default async function NewSalePage() {

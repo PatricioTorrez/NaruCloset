@@ -4,6 +4,31 @@
 
 ---
 
+## 2026-11-26 — Sesión 1 (continuación): verificación contra Supabase
+
+**Hecho**
+- Proyecto Supabase vinculado con la CLI (sin Docker). `.env.local` generado sin mostrar claves. 7 migraciones aplicadas; tipos generados desde la base.
+- 53 pruebas pgTAP y la prueba de concurrencia en verde. Build de producción en verde.
+- Registro público desactivado en Supabase (desde Chrome). Owner creado por el dueño y promovido con el script.
+- QA en Chrome con el owner: se encontraron y corrigieron estos errores:
+  - Las casillas sin marcar invalidaban el formulario (Zod 4); se agregaron pruebas unitarias.
+  - React 19 vaciaba el formulario tras un error de validación; nuevo hook `useFormAction`.
+  - El formulario de categoría no se limpiaba al crear.
+  - Al rol `service_role` le faltaban privilegios (migración 7).
+  - Next 16 marcaba `Date.now()` y datos sin caché en el panel; se resolvió con `connection()`, `loading.tsx` e `instant = false`.
+  - Las cifras de Playfair se veían como letras; ahora usan `lining-nums`.
+  - El hero era demasiado alto en ventanas bajas.
+  - Un producto agotado invitaba a apartarlo; ya no lo hace.
+
+**Pendiente**
+- Ventas, devoluciones y apartados desde la interfaz con datos reales; prueba en teléfono; Lighthouse; E2E; hosting.
+
+**Notas**
+- Las capturas de pantalla de Chrome dejaron de responder a mitad de la sesión (CDP timeout), aunque la página seguía funcionando; la verificación siguió por DOM y base de datos.
+- Con prerender parcial, un producto inexistente devuelve 200 con la página "no existe" y `noindex`.
+
+---
+
 ## 2026-11-26 — Sesión 1 (continuación): Fases 2–6 implementadas
 
 **Hecho**

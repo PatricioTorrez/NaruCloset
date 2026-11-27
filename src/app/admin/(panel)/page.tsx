@@ -2,11 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageHeader, Panel } from '@/components/admin/page-header';
 import { SalesChart } from '@/components/admin/sales-chart';
+import { fillDays } from '@/lib/chart-days';
 import { ButtonLink } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/misc';
 import { createClient } from '@/lib/supabase/server';
 import { getStoreTimezone } from '@/lib/queries/admin';
 import { formatDateTime, formatPrice, MOVEMENT_LABEL } from '@/lib/format';
+
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
 
 export const metadata: Metadata = { title: 'Resumen' };
 
@@ -74,7 +78,7 @@ export default async function DashboardPage() {
           {d.sales_count_period === 0 ? (
             <EmptyState title="Sin ventas en este periodo" className="py-10" />
           ) : (
-            <SalesChart data={d.sales_by_day.map((x) => ({ ...x, revenue: Number(x.revenue) }))} days={DAYS} />
+            <SalesChart series={fillDays(d.sales_by_day.map((x) => ({ ...x, revenue: Number(x.revenue) })), DAYS, tz)} days={DAYS} />
           )}
         </Panel>
 
@@ -86,7 +90,7 @@ export default async function DashboardPage() {
               {d.top_products.map((p) => (
                 <li key={p.name} className="flex items-baseline justify-between gap-3 text-[0.9375rem]">
                   <span className="min-w-0 truncate">{p.name}</span>
-                  <span className="shrink-0 text-sm text-muted tabular-nums">
+                  <span className="shrink-0 text-sm text-muted lining-nums tabular-nums">
                     {p.units} pzs, {formatPrice(p.revenue)}
                   </span>
                 </li>
@@ -105,7 +109,7 @@ export default async function DashboardPage() {
                   <Link href={`/admin/productos/${p.id}`} className="min-w-0 truncate hover:underline">
                     {p.name}
                   </Link>
-                  <span className="shrink-0 text-sm tabular-nums">{p.available === 0 ? 'Agotado' : `${p.available} disp.`}</span>
+                  <span className="shrink-0 text-sm lining-nums tabular-nums">{p.available === 0 ? 'Agotado' : `${p.available} disp.`}</span>
                 </li>
               ))}
             </ul>
@@ -130,7 +134,7 @@ export default async function DashboardPage() {
                       {MOVEMENT_LABEL[m.movement_type]}, {formatDateTime(m.created_at, tz)}
                     </span>
                   </span>
-                  <span className="shrink-0 text-sm tabular-nums">
+                  <span className="shrink-0 text-sm lining-nums tabular-nums">
                     {m.on_hand_delta !== 0 ? (m.on_hand_delta > 0 ? `+${m.on_hand_delta}` : m.on_hand_delta) : `${m.reserved_delta > 0 ? '+' : ''}${m.reserved_delta} apart.`}
                   </span>
                 </li>
@@ -147,7 +151,7 @@ function Stat({ label, value, sub, href }: { label: string; value: string | numb
   const content = (
     <>
       <dt className="text-sm text-muted">{label}</dt>
-      <dd className="font-display mt-1 text-[1.75rem] leading-tight tabular-nums">{value}</dd>
+      <dd className="font-display mt-1 text-[1.75rem] leading-tight lining-nums tabular-nums">{value}</dd>
       {sub && <dd className="text-xs text-muted">{sub}</dd>}
     </>
   );

@@ -4,6 +4,9 @@ import { AdminNav } from '@/components/admin/admin-nav';
 import { Skeleton } from '@/components/ui/misc';
 import { requireAdmin } from '@/lib/auth/admin';
 
+// El panel depende de la sesión en cada petición: se excluye de la validación de navegación instantánea.
+export const instant = false;
+
 export const metadata: Metadata = {
   title: { default: 'Panel', template: '%s · Panel Naru Closet' },
   robots: { index: false, follow: false },

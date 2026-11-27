@@ -127,7 +127,7 @@ async function ProductContent({ params }: { params: Promise<{ slug: string }> })
                 )}
               </div>
             )}
-            {!whatsapp && (
+            {!whatsapp && totalAvailable > 0 && (
               <p className="text-[0.9375rem] text-muted">
                 ¿Te interesa? <Link href="/contacto" className="text-espresso underline underline-offset-4">Contáctanos</Link> para apartarlo.
               </p>

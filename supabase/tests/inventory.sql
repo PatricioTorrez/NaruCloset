@@ -1,5 +1,5 @@
 -- Pruebas de inventario (docs/QA.md §2: I-1 … I-10)
-select plan(32);
+select plan(33);
 
 -- Tablas temporales creadas como postgres (antes de cambiar de rol)
 create temp table t_sale (id uuid);

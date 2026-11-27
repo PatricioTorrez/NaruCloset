@@ -6,6 +6,9 @@ import { createClient } from '@/lib/supabase/server';
 import { SettingsForm } from './settings-form';
 import { UsersManager } from './users-manager';
 
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
+
 export const metadata: Metadata = { title: 'Configuración' };
 
 export default async function SettingsPage() {

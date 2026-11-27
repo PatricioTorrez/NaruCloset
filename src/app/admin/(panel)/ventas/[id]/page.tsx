@@ -10,6 +10,9 @@ import { uuid } from '@/lib/validations/schemas';
 import { SaleStatusBadge } from '@/components/admin/status-badges';
 import { SaleActions } from './sale-actions';
 
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
+
 export const metadata: Metadata = { title: 'Detalle de venta' };
 
 export default async function SaleDetailPage(props: PageProps<'/admin/ventas/[id]'>) {

@@ -9,6 +9,9 @@ import { formatDateTime, formatPrice, isPast } from '@/lib/format';
 import { uuid } from '@/lib/validations/schemas';
 import { ReservationActions } from './reservation-actions';
 
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
+
 export const metadata: Metadata = { title: 'Detalle de apartado' };
 
 export default async function ReservationDetailPage(props: PageProps<'/admin/apartados/[id]'>) {

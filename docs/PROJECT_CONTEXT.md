@@ -12,11 +12,12 @@ Especificación completa: [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md) (fuente de verd
 
 ## Estado actual
 
-- **Fases 2–5 y parte de la 6:** código implementado; TypeScript, ESLint y Vitest en verde.
-- **Sin verificar contra la base:** falta `.env.local` con el proyecto Supabase en la nube (D-016, sin Docker). Hasta entonces no se han aplicado migraciones ni corrido `test:db`, `test:concurrency`, `build` ni E2E.
-- **Repositorio:** `github.com/PatricioTorrez/NaruCloset` (privado), commits directos a `main` (D-015).
-- **Hosting:** se decide en la Fase 6 (D-001).
-- **Decisiones:** D-001…D-019 aprobadas. Pendiente: D-014 (tono de rosa para texto).
+- **Fases 2–4 completas y verificadas** contra Supabase en la nube (proyecto `yohrwgppkxonwzefiryh`, us-west-2).
+- **Fase 5:** lógica verificada (53 pruebas pgTAP + concurrencia); falta probarla desde la interfaz con productos reales.
+- **Fase 6:** SEO y seguridad listos; faltan Lighthouse, prueba en teléfono, E2E (descarga de Chromium no autorizada) y hosting (D-001).
+- **Owner del panel:** creado (perfil activo). Registro público desactivado en Supabase.
+- **Base de datos:** vacía de datos de negocio (las pruebas se revierten o se limpian).
+- **Repositorio:** commits directos a `main` (D-015).
 
 ## Stack previsto
 
@@ -34,9 +35,9 @@ Node 24.19 · npm 11.17 · Git 2.56 · Docker 29.7 · Supabase CLI 3.4.0 (vía `
 
 ## Siguiente paso
 
-1. El dueño crea el proyecto Supabase y `.env.local`.
-2. `npm run db:push` → `npm run test:db` → `npm run test:concurrency` → `npm run create-owner` → `npm run build` → E2E y revisión visual.
-3. Corregir lo que falle, cerrar fases en `TASKS.md`, completar Fase 6.
+1. El dueño carga sus primeros productos reales (categorías, colores, tallas, producto, variantes, fotos, entrada de mercancía).
+2. Con esos datos, verificar desde la interfaz ventas, devoluciones y apartados (F5-V) y revisar en un teléfono.
+3. Decidir hosting (D-001) y desplegar con autorización.
 
 ## Archivos de seguimiento
 

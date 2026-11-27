@@ -85,6 +85,8 @@
     font-family: var(--font-display);
     font-weight: 500;
     letter-spacing: -0.01em;
+    /* Playfair usa cifras de estilo antiguo por defecto; en datos se requieren cifras alineadas. */
+    font-variant-numeric: lining-nums;
   }
 }
 

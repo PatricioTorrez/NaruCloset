@@ -39,7 +39,7 @@ for (const file of tests) {
       .flatMap((v) => v.split('\n'));
     for (const line of lines) {
       if (/^ok /.test(line)) passed++;
-      if (/^not ok /.test(line)) failed++;
+      if (/^not ok /.test(line) || /Looks like you (planned|failed)/.test(line)) failed++;
       if (/^(ok|not ok|#|1\.\.)/.test(line.trim())) console.log(line);
     }
   } catch (e) {

@@ -9,6 +9,9 @@ import { createClient } from '@/lib/supabase/server';
 import { getStoreTimezone } from '@/lib/queries/admin';
 import { formatDateTime } from '@/lib/format';
 
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
+
 export const metadata: Metadata = { title: 'Apartados' };
 
 const FILTERS = { abiertos: ['pending', 'confirmed'], cerrados: ['completed', 'cancelled', 'expired'] } as const;

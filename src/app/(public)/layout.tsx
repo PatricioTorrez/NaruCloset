@@ -1,4 +1,5 @@
-import { SiteHeader } from '@/components/public/site-header';
+import { Suspense } from 'react';
+import { SiteHeader, SiteHeaderStatic } from '@/components/public/site-header';
 import { SiteFooter } from '@/components/public/site-footer';
 import { getSettings } from '@/lib/queries/catalog';
 
@@ -13,7 +14,9 @@ export default async function PublicLayout({ children }: { children: React.React
       >
         Saltar al contenido
       </a>
-      <SiteHeader storeName={settings.store_name} />
+      <Suspense fallback={<SiteHeaderStatic storeName={settings.store_name} />}>
+        <SiteHeader storeName={settings.store_name} />
+      </Suspense>
       <main id="contenido">{children}</main>
       <SiteFooter settings={settings} />
     </>

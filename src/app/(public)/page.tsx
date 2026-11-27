@@ -2,12 +2,34 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { LogoStacked } from '@/components/brand/logo';
 import { ButtonLink } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/misc';
+import { Suspense } from 'react';
+import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { ProductGrid } from '@/components/public/product-card';
 import { getFilterOptions, getSettings, searchCatalog } from '@/lib/queries/catalog';
 import { publicImageUrl } from '@/lib/env';
 
-export default async function HomePage() {
+export default function HomePage() {
+  return (
+    <Suspense fallback={<HomeSkeleton />}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+function HomeSkeleton() {
+  return (
+    <section className="container-page grid items-end gap-8 pt-8 pb-16 md:grid-cols-[1.1fr_1fr] md:gap-12 md:pt-10">
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-16 w-4/5" />
+        <Skeleton className="h-16 w-3/5" />
+        <Skeleton className="mt-4 h-12 w-64" />
+      </div>
+      <Skeleton className="aspect-[4/5] w-full rounded-sm md:aspect-auto md:h-[min(calc(100dvh-160px),720px)]" />
+    </section>
+  );
+}
+
+async function HomeContent() {
   const [settings, featured, latest, { categories }] = await Promise.all([
     getSettings(),
     searchCatalog({ onlyFeatured: true, pageSize: 8 }),
@@ -23,7 +45,7 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero editorial */}
-      <section className="container-page grid items-end gap-8 pt-10 pb-16 md:grid-cols-[1.1fr_1fr] md:gap-12 md:pt-16 md:pb-24">
+      <section className="container-page grid items-end gap-8 pt-8 pb-16 md:grid-cols-[1.1fr_1fr] md:gap-12 md:pt-10 md:pb-24">
         <div className="flex flex-col gap-6 md:pb-10">
           <h1 className="font-display text-[clamp(2.75rem,8vw,5.5rem)] leading-[0.98] tracking-[-0.03em] text-balance">
             {settings.slogan || settings.store_name}
@@ -38,7 +60,7 @@ export default async function HomePage() {
             </ButtonLink>
           </div>
         </div>
-        <div className="relative aspect-[4/5] overflow-hidden rounded-sm bg-sand/60">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-sm bg-sand/60 md:aspect-auto md:h-[min(calc(100dvh-160px),720px)] md:min-h-[420px]">
           {heroSrc && heroProduct ? (
             <Link href={`/producto/${heroProduct.slug}`} aria-label={`Ver ${heroProduct.name}`}>
               <Image

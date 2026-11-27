@@ -5,29 +5,30 @@ Catálogo web oficial y panel administrativo de **Naru Closet**, marca de ropa p
 - **Sitio público:** catálogo con fotos, precios, tallas, colores y disponibilidad por variante, con contacto opcional por WhatsApp. No tiene carrito ni pagos en línea; la entrega se coordina directamente con el cliente.
 - **Panel privado (`/admin`):** productos, variantes, fotografías, inventario por variante, entradas, ventas, apartados, historial de movimientos y configuración.
 
-> **Estado:** Fase 1 completada (planificación). La aplicación se construye a partir de la Fase 2. Ver [`docs/ROADMAP.md`](docs/ROADMAP.md).
+> **Estado:** Fases 1–4 completas y verificadas; Fase 5 verificada a nivel de base de datos; Fase 6 en curso. Ver [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Tecnologías
 
-Next.js · React · TypeScript · Tailwind CSS · shadcn/ui · Supabase (PostgreSQL, Auth, Storage, RLS) · Zod · React Hook Form.
+Next.js 16 · React 19 · TypeScript · Tailwind CSS 4 · Supabase (PostgreSQL, Auth, Storage, RLS) · Zod · Vitest · pgTAP · Playwright.
 
 ## Requisitos
 
-- Node.js 20 o superior (desarrollado con 24) y npm.
-- Docker Desktop, para correr Supabase en local.
-- Supabase CLI, que se usa con `npx supabase`.
+- Node.js 20.9 o superior (desarrollado con 24) y npm.
+- Un proyecto de Supabase (plan gratuito). No se usa Docker.
 
 ## Instalación y ejecución local
 
-> Las instrucciones se completan en la Fase 2, cuando exista la aplicación.
-
 ```bash
 npm install
-cp .env.example .env.local      # completar valores
-npx supabase start              # base de datos local (Docker)
-npx supabase db reset           # aplica migraciones y datos de desarrollo
-npm run dev
+npx supabase login                       # sesión de la CLI (abre el navegador)
+npx supabase link --project-ref <ref>    # vincula el proyecto
+cp .env.example .env.local               # completar valores (ver docs/ARCHITECTURE.md §4)
+npm run db:push                          # aplica supabase/migrations
+npm run test:db                          # pruebas de inventario y seguridad
+npm run dev                              # http://localhost:3000
 ```
+
+**Primer usuario del panel:** créelo en Supabase (*Authentication → Users → Add user*, con *Auto Confirm User*) y luego ejecute `npm run create-owner -- correo@ejemplo.com "Nombre"`. Desactive el registro público en *Authentication → Sign In / Providers*.
 
 ## Configuración
 

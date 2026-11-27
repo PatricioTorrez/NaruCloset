@@ -22,8 +22,11 @@ const money = z.coerce
   .max(999999.99, 'El valor es demasiado alto.')
   .transform((v) => Math.round(v * 100) / 100);
 
+// Una casilla sin marcar no se envía en el FormData: debe ser opcional (en Zod 4 una unión
+// con z.undefined() no vuelve opcional la clave del objeto).
 const checkbox = z
-  .union([z.literal('on'), z.literal('true'), z.boolean(), z.undefined(), z.null()])
+  .union([z.literal('on'), z.literal('true'), z.literal('false'), z.boolean(), z.null()])
+  .optional()
   .transform((v) => v === 'on' || v === 'true' || v === true);
 
 export const uuid = z.uuid('Identificador inválido.');
@@ -56,7 +59,8 @@ export const productSchema = z
     audience: z.enum(['women', 'men', 'unisex'], { error: 'Elija la colección.' }),
     price: money.refine((v) => v > 0, 'El precio debe ser mayor que cero.'),
     sale_price: z
-      .union([z.literal(''), z.undefined(), z.null(), money])
+      .union([z.literal(''), z.null(), money])
+      .optional()
       .transform((v) => (v === '' || v === undefined || v === null || v === 0 ? null : v)),
     is_active: checkbox,
     is_new: checkbox,
@@ -85,7 +89,8 @@ export const stockEntrySchema = z.object({
         variant_id: uuid,
         quantity: qty,
         unit_cost: z
-          .union([z.literal(''), z.undefined(), z.null(), money])
+          .union([z.literal(''), z.null(), money])
+          .optional()
           .transform((v) => (v === '' || v === undefined || v === null ? null : v)),
       }),
     )
@@ -98,7 +103,8 @@ export const paymentMethods = ['cash', 'transfer', 'card', 'other'] as const;
 export const saleSchema = z.object({
   sold_at: z.string().optional(),
   payment_method: z
-    .union([z.enum(paymentMethods), z.literal(''), z.undefined()])
+    .union([z.enum(paymentMethods), z.literal(''), z.null()])
+    .optional()
     .transform((v) => (v ? v : null)),
   customer_reference: optionalText(120),
   notes: optionalText(1000),
@@ -161,7 +167,8 @@ export const settingsSchema = z
     reservations_hold_stock: checkbox,
     reservation_default_days: z
       .union([z.literal(''), z.coerce.number().int().min(1).max(90)])
-      .transform((v) => (v === '' ? null : v)),
+      .optional()
+      .transform((v) => (v === '' || v === undefined ? null : v)),
     delivery_info: optionalText(2000),
     pickup_info: optionalText(2000),
   })

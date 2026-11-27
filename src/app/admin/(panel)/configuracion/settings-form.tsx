@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useFormAction } from '@/components/ui/use-form-action';
 import { saveSettings } from '@/lib/actions/settings';
 import { Panel } from '@/components/admin/page-header';
 import { Button } from '@/components/ui/button';
@@ -10,12 +10,12 @@ import type { Database } from '@/types/database';
 type Settings = Database['public']['Tables']['store_settings']['Row'];
 
 export function SettingsForm({ settings: s, readOnly }: { settings: Settings; readOnly: boolean }) {
-  const [state, action, pending] = useActionState(saveSettings, null);
+  const [state, onSubmit, pending] = useFormAction(saveSettings);
   const fe = state && !state.ok ? state.fieldErrors : undefined;
   const e = (k: string) => fe?.[k]?.[0];
 
   return (
-    <form action={action} className="flex flex-col gap-6">
+    <form onSubmit={onSubmit} className="flex flex-col gap-6">
       <fieldset disabled={readOnly || pending} className="flex flex-col gap-6">
         <Panel title="Marca">
           <div className="grid gap-5 md:grid-cols-2">

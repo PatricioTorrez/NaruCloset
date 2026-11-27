@@ -5,6 +5,9 @@ import { EmptyState } from '@/components/ui/misc';
 import { getVariantOptions } from '@/lib/queries/admin';
 import { EntryForm } from './entry-form';
 
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
+
 export const metadata: Metadata = { title: 'Nueva entrada' };
 
 export default async function NewEntryPage() {

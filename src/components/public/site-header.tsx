@@ -19,11 +19,21 @@ const secondaryNav = [
   { href: '/contacto', label: 'Contacto' },
 ];
 
+/** Encabezado con estado de navegación (ruta activa, menú móvil). Va dentro de <Suspense>. */
 export function SiteHeader({ storeName }: { storeName: string }) {
   const pathname = usePathname();
+  return <HeaderView storeName={storeName} pathname={pathname} />;
+}
+
+/** Versión estática para el respaldo de <Suspense> (prerender): misma apariencia, sin ruta activa. */
+export function SiteHeaderStatic({ storeName }: { storeName: string }) {
+  return <HeaderView storeName={storeName} pathname={null} />;
+}
+
+function HeaderView({ storeName, pathname }: { storeName: string; pathname: string | null }) {
   // El menú queda abierto solo en la ruta donde se abrió: al navegar se cierra solo.
   const [openOn, setOpenOn] = useState<string | null>(null);
-  const open = openOn === pathname;
+  const open = pathname !== null && openOn === pathname;
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -32,7 +42,7 @@ export function SiteHeader({ storeName }: { storeName: string }) {
     };
   }, [open]);
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => pathname !== null && (pathname === href || pathname.startsWith(`${href}/`));
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-ivory/95 backdrop-blur-sm">

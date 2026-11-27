@@ -16,51 +16,68 @@
 
 ## 2. Pruebas de inventario (obligatorias, pgTAP)
 
-- [ ] I-1 Una entrada aumenta solo las existencias de la variante indicada.
-- [ ] I-2 Una venta descuenta las existencias correctas.
-- [ ] I-3 Operar una variante no modifica otra del mismo producto.
-- [ ] I-4 Vender más que `stock_available` falla y no deja cambios parciales.
-- [ ] I-5 Cancelación y devolución restauran existencias y generan su movimiento.
-- [ ] I-6 Dos ventas simultáneas de la última unidad: exactamente una tiene éxito.
-- [ ] I-7 En cada movimiento se cumple `after = before + delta`, y la suma de deltas coincide con las existencias actuales.
-- [ ] I-8 Con `reservations_hold_stock = true`, las unidades apartadas no se pueden vender; al cancelar o vencer el apartado se liberan.
-- [ ] I-9 Los ajustes sin motivo fallan; `staff` no puede hacer ajustes.
-- [ ] I-10 `UPDATE` directo de `stock_on_hand` fuera de las funciones falla.
+- [x] I-1 Una entrada aumenta solo las existencias de la variante indicada.
+- [x] I-2 Una venta descuenta las existencias correctas.
+- [x] I-3 Operar una variante no modifica otra del mismo producto.
+- [x] I-4 Vender más que `stock_available` falla y no deja cambios parciales.
+- [x] I-5 Cancelación y devolución restauran existencias y generan su movimiento.
+- [x] I-6 Dos ventas simultáneas de la última unidad: exactamente una tiene éxito.
+- [x] I-7 En cada movimiento se cumple `after = before + delta`, y la suma de deltas coincide con las existencias actuales.
+- [x] I-8 Con `reservations_hold_stock = true`, las unidades apartadas no se pueden vender; al cancelar o vencer el apartado se liberan.
+- [x] I-9 Los ajustes sin motivo fallan; `staff` no puede hacer ajustes.
+- [x] I-10 `UPDATE` directo de `stock_on_hand` fuera de las funciones falla.
 
 ## 3. Pruebas de seguridad
 
-- [ ] S-1 `/admin` sin sesión redirige al login.
-- [ ] S-2 Un usuario autenticado sin perfil, o con perfil inactivo, no accede al panel ni a las RPC.
-- [ ] S-3 `anon` no puede leer ventas, movimientos, apartados, costos ni perfiles (pgTAP con `set role anon`).
-- [ ] S-4 `anon` no puede insertar ni actualizar productos o variantes usando la clave publishable.
-- [ ] S-5 `anon` no puede subir ni borrar archivos en `product-images`.
-- [ ] S-6 `staff` no puede cambiar la configuración, ver costos ni ajustar inventario.
-- [ ] S-7 El bundle del cliente no contiene `SUPABASE_SECRET_KEY` (búsqueda en `.next/static`).
-- [ ] S-8 Los productos inactivos o archivados no aparecen ni son accesibles por URL (404).
+- [x] S-1 `/admin` sin sesión redirige al login.
+- [x] S-2 Un usuario autenticado sin perfil, o con perfil inactivo, no accede al panel ni a las RPC.
+- [x] S-3 `anon` no puede leer ventas, movimientos, apartados, costos ni perfiles (pgTAP con `set role anon`).
+- [x] S-4 `anon` no puede insertar ni actualizar productos o variantes usando la clave publishable.
+- [x] S-5 `anon` no puede subir ni borrar archivos en `product-images`.
+- [x] S-6 `staff` no puede cambiar la configuración, ver costos ni ajustar inventario.
+- [x] S-7 El bundle del cliente no contiene `SUPABASE_SECRET_KEY` (búsqueda en `.next/static`).
+- [x] S-8 Los productos inactivos o archivados no aparecen ni son accesibles por URL (404).
 
 ## 4. Pruebas funcionales (Playwright)
 
-- [ ] F-1 Crear, editar, desactivar y archivar un producto.
-- [ ] F-2 Crear variantes; rechazar una combinación duplicada.
-- [ ] F-3 Subir, reordenar, marcar como principal y eliminar fotos.
+- [x] F-1 Crear, editar, desactivar y archivar un producto.
+- [x] F-2 Crear variantes; rechazar una combinación duplicada.
+- [x] F-3 Subir, reordenar, marcar como principal y eliminar fotos.
 - [ ] F-4 Registrar una entrada, una venta, una cancelación y una devolución desde el panel.
 - [ ] F-5 Crear, confirmar, completar y cancelar apartados.
 - [ ] F-6 El historial muestra todos los movimientos anteriores con usuario y motivo.
-- [ ] F-7 El dashboard coincide con los datos reales de la base.
-- [ ] F-8 El catálogo filtra por categoría, colección, talla y color, ordena y busca con datos reales.
+- [x] F-7 El dashboard coincide con los datos reales de la base.
+- [x] F-8 El catálogo filtra por categoría, colección, talla y color, ordena y busca con datos reales.
 - [ ] F-9 En el detalle de producto, la disponibilidad cambia al elegir color y talla; una variante con 0 existencias nunca aparece como disponible.
 - [ ] F-10 El botón de WhatsApp solo aparece si está habilitado, incluye el producto y la variante, y no aparece si está agotado.
 
 ## 5. Pruebas visuales
 
 - [ ] V-1 Móvil, tablet y escritorio en todas las rutas públicas y del panel.
-- [ ] V-2 Fotos verticales, horizontales y productos sin foto.
+- [x] V-2 Fotos verticales, horizontales y productos sin foto.
 - [ ] V-3 Nombres y descripciones muy largos (skill `break-ui`).
-- [ ] V-4 Producto agotado, catálogo vacío, sin resultados de filtro.
+- [x] V-4 Producto agotado, catálogo vacío, sin resultados de filtro.
 - [ ] V-5 Error de carga (Supabase no disponible): mensaje claro, sin pantalla rota.
 - [ ] V-6 `prefers-reduced-motion` respetado.
 - [ ] V-7 Navegación completa con teclado y foco visible.
 
-## 6. Criterios de aceptación por fase
+## 6. Registro de verificación (2026-11-26)
+
+| Verificación | Resultado |
+|---|---|
+| `npm run test:db` (pgTAP contra Supabase en la nube) | 53/53 |
+| `npm run test:concurrency` (6 ventas simultáneas de la última unidad) | 1 éxito, 5 rechazadas, existencias 0 |
+| `npm test` (Vitest) | 13/13 |
+| `typecheck`, `lint`, `build` | Sin errores |
+| S-7: secretos en `.next/static` | 0 coincidencias en 43 archivos |
+| Panel en Chrome (owner real): categorías, colores, tallas, producto con validación, variantes y duplicados, 2 fotos (636 KB → 80 KB WebP; horizontal sin recorte), foto principal, reordenar, eliminar con limpieza de Storage, configuración | Correcto; datos `[QA]` eliminados |
+| Público en Chrome: inicio, catálogo, búsqueda, "solo disponibles", unisex en Hombre, detalle agotado sin WhatsApp, JSON-LD, 404 con `noindex` | Correcto |
+
+**Pendiente de verificar:**
+- F-4…F-6 y F-9…F-10 desde la interfaz (entradas, ventas, apartados, historial y selector con existencias): la lógica está cubierta por pgTAP; desde la UI dejarían historial inmutable en la base de producción. Hacerlo con los primeros productos reales.
+- V-1, V-3, V-5…V-7 y `npm run test:e2e`: Playwright necesita descargar Chromium (no autorizado) y la ventana de Chrome no se pudo redimensionar para la vista móvil. Revisar en un teléfono real.
+- Lighthouse (Fase 6).
+
+## 7. Criterios de aceptación por fase
 
 Ver `ROADMAP.md`. Una fase se cierra solo con su puerta de calidad en verde y revisión del dueño.

@@ -3,6 +3,9 @@ import { PageHeader } from '@/components/admin/page-header';
 import { AttributeManager } from './attribute-manager';
 import { createClient } from '@/lib/supabase/server';
 
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
+
 export const metadata: Metadata = { title: 'Colores y tallas' };
 
 export default async function AttributesPage() {

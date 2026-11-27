@@ -6,7 +6,7 @@
 
 - Supabase Auth con correo y contraseña. Las contraseñas las gestiona Supabase; nunca se guardan en tablas propias.
 - **Registro público desactivado**: `enable_signup: false` en `supabase/config.jsonc`; en la nube, Authentication → Sign In / Providers → desactivar *Allow new users to sign up*. Un usuario invitado queda con perfil **inactivo** hasta que un owner lo active.
-- Los usuarios se invitan desde el panel de Supabase. El primer `owner` se crea con `npm run create-owner`, que usa `SUPABASE_SECRET_KEY` solo en la terminal.
+- Los usuarios se invitan desde el panel de Supabase. El primer `owner` se crea en Supabase (Authentication → Users → Add user) y se promueve con `npm run create-owner`, que usa `SUPABASE_SECRET_KEY` solo en la terminal y nunca recibe contraseñas.
 - La sesión vive en cookies httpOnly gestionadas por `@supabase/ssr`. El middleware solo refresca la sesión.
 - En el servidor la identidad se verifica con `supabase.auth.getUser()` o `getClaims()`, que validan contra Auth. Nunca se confía en `getSession()` para autorizar.
 

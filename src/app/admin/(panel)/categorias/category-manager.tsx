@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { useFormAction } from '@/components/ui/use-form-action';
 import { useRouter } from 'next/navigation';
 import { Pencil } from 'lucide-react';
 import { saveCategory, deleteCategory } from '@/lib/actions/catalog';
@@ -23,6 +24,8 @@ type Category = {
 
 export function CategoryManager({ categories }: { categories: Category[] }) {
   const [editing, setEditing] = useState<Category | null>(null);
+  const [formKey, setFormKey] = useState(0);
+  const [notice, setNotice] = useState<string | null>(null);
   const router = useRouter();
 
   return (
@@ -41,7 +44,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
             </Cell>
             <Cell label="Acciones" className="text-right">
               <div className="flex justify-end gap-2">
-                <Button size="sm" variant="ghost" onClick={() => setEditing(c)}>
+                <Button size="sm" variant="ghost" onClick={() => { setEditing(c); setNotice(null); }}>
                   <Pencil className="size-4" aria-hidden /> Editar
                 </Button>
                 <ConfirmAction
@@ -60,31 +63,47 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
       </DataTable>
 
       <Panel title={editing ? 'Editar categoría' : 'Nueva categoría'}>
-        <CategoryForm key={editing?.id ?? 'new'} category={editing} onDone={() => setEditing(null)} />
+        {notice && <div className="mb-4"><FormMessage tone="success">{notice}</FormMessage></div>}
+        <CategoryForm
+          key={editing?.id ?? `new-${formKey}`}
+          category={editing}
+          onEdit={() => setNotice(null)}
+          onCancel={() => setEditing(null)}
+          onSaved={(message) => {
+            setNotice(message);
+            setEditing(null);
+            setFormKey((k) => k + 1);
+            router.refresh();
+          }}
+        />
       </Panel>
     </div>
   );
 }
 
-function CategoryForm({ category, onDone }: { category: Category | null; onDone: () => void }) {
-  const [state, action, pending] = useActionState(saveCategory, null);
+function CategoryForm({
+  category,
+  onSaved,
+  onCancel,
+  onEdit,
+}: {
+  category: Category | null;
+  onSaved: (message: string) => void;
+  onCancel: () => void;
+  onEdit: () => void;
+}) {
+  const [state, onSubmit, pending] = useFormAction(async (prev: Awaited<ReturnType<typeof saveCategory>> | null, fd: FormData) => {
+    const result = await saveCategory(prev, fd);
+    if (result.ok) onSaved(result.message ?? 'Guardado.');
+    return result;
+  });
   const [name, setName] = useState(category?.name ?? '');
   const [slug, setSlug] = useState(category?.slug ?? '');
   const [slugTouched, setSlugTouched] = useState(Boolean(category));
-  const formRef = useRef<HTMLFormElement>(null);
-  const router = useRouter();
   const fe = state && !state.ok ? state.fieldErrors : undefined;
 
-  useEffect(() => {
-    if (state?.ok) {
-      router.refresh();
-      if (!category) formRef.current?.reset();
-      onDone();
-    }
-  }, [state, router, category, onDone]);
-
   return (
-    <form ref={formRef} action={action} className="flex flex-col gap-4">
+    <form onSubmit={onSubmit} onChange={onEdit} className="flex flex-col gap-4">
       {category && <input type="hidden" name="id" value={category.id} />}
       <Field label="Nombre" htmlFor="cat-name" error={fe?.name?.[0]}>
         <Input
@@ -122,13 +141,12 @@ function CategoryForm({ category, onDone }: { category: Category | null; onDone:
       </Field>
       <Checkbox name="is_active" label="Visible en el sitio" defaultChecked={category?.is_active ?? true} />
       {state && !state.ok && <FormMessage tone="error">{state.error}</FormMessage>}
-      {state?.ok && state.message && <FormMessage tone="success">{state.message}</FormMessage>}
       <div className="flex gap-2">
         <Button type="submit" disabled={pending} className="flex-1">
           {pending ? 'Guardando…' : category ? 'Guardar cambios' : 'Crear categoría'}
         </Button>
         {category && (
-          <Button variant="ghost" onClick={onDone}>
+          <Button variant="ghost" onClick={onCancel}>
             Cancelar
           </Button>
         )}

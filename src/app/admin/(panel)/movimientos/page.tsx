@@ -8,6 +8,9 @@ import { formatDateTime, MOVEMENT_LABEL } from '@/lib/format';
 import { uuid } from '@/lib/validations/schemas';
 import type { Database } from '@/types/database';
 
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
+
 export const metadata: Metadata = { title: 'Movimientos' };
 
 type MovementType = Database['public']['Enums']['movement_type'];

@@ -3,24 +3,15 @@
 import { useState } from 'react';
 import { formatPrice } from '@/lib/format';
 
-type Day = { day: string; revenue: number; units: number };
+import type { Day } from '@/lib/chart-days';
 
 /**
  * Ingresos por día (una serie). Barras finas con extremo redondeado de 4 px anclado a la base,
  * separación de 2 px, tooltip al pasar el cursor o enfocar, y tabla equivalente para lectores de pantalla.
  * Color: Dusty Rose (validado: banda de luminosidad y contraste ≥ 3:1 sobre blanco).
  */
-export function SalesChart({ data, days }: { data: Day[]; days: number }) {
+export function SalesChart({ series, days }: { series: Day[]; days: number }) {
   const [hover, setHover] = useState<number | null>(null);
-
-  // Completa los días sin ventas con cero para que el eje de tiempo sea continuo.
-  const byDay = new Map(data.map((d) => [d.day, d]));
-  const series: Day[] = Array.from({ length: days }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (days - 1 - i));
-    const key = date.toLocaleDateString('en-CA');
-    return byDay.get(key) ?? { day: key, revenue: 0, units: 0 };
-  });
   const max = Math.max(1, ...series.map((d) => d.revenue));
   const label = (key: string) =>
     new Date(`${key}T12:00:00`).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });

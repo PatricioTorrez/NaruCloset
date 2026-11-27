@@ -33,6 +33,9 @@ El dueño aprobó el 2026-11-26 todas las recomendaciones de la auditoría ("Tú
 | D-017 | Sin shadcn/ui, React Hook Form ni Recharts: primitivos propios con `<dialog>` nativo, `useActionState` + Zod en servidor y una gráfica HTML propia. Menos dependencias, mismo resultado | 2026-11-26 |
 | D-018 | Next.js 16 con Cache Components: catálogo con `use cache` + `cacheTag`, invalidado con `updateTag` desde las Server Actions; perfil `catalog` (revalidación 60 s) | 2026-11-26 |
 | D-019 | Gráfica del panel en Dusty Rose: única serie; mejor croma de la paleta, banda de luminosidad y contraste ≥ 3:1 validados | 2026-11-26 |
+| D-020 | El rol `service_role` recibe privilegios explícitos (migración 7): los proyectos nuevos de Supabase no los conceden. Solo lo usan scripts de servidor | 2026-11-26 |
+| D-021 | Panel con `instant = false` en cada página y `loading.tsx`: depende de la sesión en cada petición; `createClient()` llama `connection()` | 2026-11-26 |
+| D-022 | El primer owner lo crea el dueño en Supabase (Authentication → Users) y `npm run create-owner` solo lo promueve: los scripts nunca manejan contraseñas | 2026-11-26 |
 | D-013 | Mantener los archivos MD de contexto (`PROJECT_CONTEXT`, `TASKS`, `DECISIONS`, `SESSION_LOG`) actualizados en cada sesión | 2026-11-26 |
 
 ## Decisiones técnicas de arquitectura

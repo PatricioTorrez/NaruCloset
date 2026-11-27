@@ -11,6 +11,9 @@ import { Badge } from '@/components/ui/misc';
 import { createClient } from '@/lib/supabase/server';
 import { uuid } from '@/lib/validations/schemas';
 
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
+
 export const metadata: Metadata = { title: 'Editar producto' };
 
 export default async function EditProductPage(props: PageProps<'/admin/productos/[id]'>) {

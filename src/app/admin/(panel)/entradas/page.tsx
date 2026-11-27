@@ -9,6 +9,9 @@ import { getAdmin } from '@/lib/auth/admin';
 import { getStoreTimezone } from '@/lib/queries/admin';
 import { formatDateTime, formatPrice } from '@/lib/format';
 
+// Panel: depende de la sesión en cada petición (sin navegación instantánea).
+export const instant = false;
+
 export const metadata: Metadata = { title: 'Entradas de mercancía' };
 
 export default async function EntriesPage(props: PageProps<'/admin/entradas'>) {
