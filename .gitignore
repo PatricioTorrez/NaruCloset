@@ -11,6 +11,8 @@ next-env.d.ts
 .env
 .env.*
 !.env.example
+# Solo valores públicos de producción (ver comentario dentro del archivo)
+!.env.production
 
 # Supabase local
 supabase/.temp/
