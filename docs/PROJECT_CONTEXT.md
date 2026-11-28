@@ -36,7 +36,7 @@ Node 24.19 · npm 11.17 · Git 2.56 · Docker 29.7 · Supabase CLI 3.4.0 (vía `
 
 ## Siguiente paso
 
-0. Revisar el rediseño en el navegador (panel y sitio en teléfono/tablet/escritorio) y pedir autorización para commit/push.
+0. Revisar el rediseño en teléfono y tablet (escritorio ya verificado; subido a `main` en 4fc1581).
 1. El dueño carga sus primeros productos reales (categorías, colores, tallas, producto, variantes, fotos, entrada de mercancía).
 2. Con esos datos, verificar desde la interfaz ventas, devoluciones y apartados (F5-V) y revisar en un teléfono.
 3. Decidir hosting (D-001) y desplegar con autorización.

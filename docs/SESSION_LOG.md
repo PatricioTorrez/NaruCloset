@@ -24,7 +24,7 @@
 
 **Pendiente**
 - Revisar en teléfono y tablet.
-- Commit y push (pedir autorización: un push a `main` puede desplegar).
+- ~~Commit y push~~ Hecho con autorización: commit 4fc1581 en `main`.
 
 **Notas**
 - La extensión de Chrome volvió a fallar (capturas con timeout y luego desconexión). Las páginas públicas se verificaron por HTTP (200 con el contenido nuevo).
