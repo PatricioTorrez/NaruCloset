@@ -36,6 +36,14 @@ El dueño aprobó el 2026-11-26 todas las recomendaciones de la auditoría ("Tú
 | D-020 | El rol `service_role` recibe privilegios explícitos (migración 7): los proyectos nuevos de Supabase no los conceden. Solo lo usan scripts de servidor | 2026-11-26 |
 | D-021 | Panel con `instant = false` en cada página y `loading.tsx`: depende de la sesión en cada petición; `createClient()` llama `connection()` | 2026-11-26 |
 | D-022 | El primer owner lo crea el dueño en Supabase (Authentication → Users) y `npm run create-owner` solo lo promueve: los scripts nunca manejan contraseñas | 2026-11-26 |
+| D-023 | Un producto tiene varios **colores** (`product_colors`), cada uno con sus fotos y **precio opcional**; precio vigente = color › promoción › precio. Spec: `docs/superpowers/specs/2026-11-27-colores-inventario-rediseno-design.md` | 2026-11-27 |
+| D-024 | Formulario de producto sin "Visible" ni "Destacar"; se conserva **Novedad** (va primero en "recientes"). Un producto nuevo nace oculto | 2026-11-27 |
+| D-025 | La visibilidad se decide en **Inventario** con un ojo (abierto = visible, tachado = oculto) y modal de confirmación; ahí se capturan tallas y piezas por color (entrada de mercancía transaccional) | 2026-11-27 |
+| D-026 | Íconos: Lucide + `@lucide/lab` (dependencia aprobada); categorías guardan la clave en `categories.icon` | 2026-11-27 |
+| D-027 | Sitio público: Inicio estilo "Lookbook tipo app" (opción B) y Producto estilo "Boutique editorial" (opción A); misma paleta y tipografías | 2026-11-27 |
+| D-028 | Inventario: el owner corrige existencias de varias tallas a la vez con `adjust_stock_many` (todo o nada, motivo obligatorio); reemplaza el botón «Ajustar» por talla | 2026-11-27 |
+| D-029 | Un producto sin piezas ni apartados muestra «Quitar»: se elimina si nunca tuvo movimientos; si los tuvo, se archiva | 2026-11-27 |
+| D-030 | En el sitio público, la píldora «Todo» lleva al inicio (botón visible para volver) | 2026-11-27 |
 | D-013 | Mantener los archivos MD de contexto (`PROJECT_CONTEXT`, `TASKS`, `DECISIONS`, `SESSION_LOG`) actualizados en cada sesión | 2026-11-26 |
 
 ## Decisiones técnicas de arquitectura

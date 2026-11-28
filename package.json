@@ -18,6 +18,7 @@
     "create-owner": "node --env-file=.env.local scripts/create-owner.mjs"
   },
   "dependencies": {
+    "@lucide/lab": "^0.18.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.119.2",
     "lucide-react": "^1.81.0",

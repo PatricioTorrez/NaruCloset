@@ -22,7 +22,7 @@ export async function getVariantOptions(): Promise<VariantOption[]> {
   const { data, error } = await supabase
     .from('product_variants')
     .select(
-      'id, stock_on_hand, stock_reserved, stock_available, is_active, product:products!inner(id, name, price, sale_price, archived_at), color:colors!inner(name, hex, sort_order), size:sizes!inner(name, sort_order)',
+      'id, color_id, stock_on_hand, stock_reserved, stock_available, is_active, product:products!inner(id, name, price, sale_price, archived_at, colors:product_colors(color_id, price)), color:colors!inner(name, hex, sort_order), size:sizes!inner(name, sort_order)',
     )
     .limit(3000);
   if (error) throw new Error(error.message);
@@ -38,7 +38,10 @@ export async function getVariantOptions(): Promise<VariantOption[]> {
       onHand: v.stock_on_hand,
       reserved: v.stock_reserved,
       available: v.stock_available ?? 0,
-      price: Number(v.product.sale_price ?? v.product.price),
+      // Precio vigente: el del color si tiene uno propio; si no, promoción o precio del producto.
+      price: Number(
+        v.product.colors.find((c) => c.color_id === v.color_id)?.price ?? v.product.sale_price ?? v.product.price,
+      ),
       archived: Boolean(v.product.archived_at),
       active: v.is_active,
       _order: [v.color.sort_order, v.size.sort_order] as const,

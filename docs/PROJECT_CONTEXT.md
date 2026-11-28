@@ -1,7 +1,7 @@
 # Contexto del proyecto — Naru Closet
 
 > **Leer primero en cada sesión.** Fotografía breve del estado actual. Se actualiza al terminar cada sesión de trabajo.
-> Última actualización: 2026-11-26
+> Última actualización: 2026-11-27
 
 ## Qué es
 
@@ -12,11 +12,12 @@ Especificación completa: [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md) (fuente de verd
 
 ## Estado actual
 
+- **Rediseño 2026-11-27 implementado** (D-023…D-027): colores por producto con precio y fotos, inventario con ojo de visibilidad, íconos, Inicio B + Producto A. Pruebas y build en verde; **falta revisión visual en navegador**.
 - **Fases 2–4 completas y verificadas** contra Supabase en la nube (proyecto `yohrwgppkxonwzefiryh`, us-west-2).
 - **Fase 5:** lógica verificada (53 pruebas pgTAP + concurrencia); falta probarla desde la interfaz con productos reales.
 - **Fase 6:** SEO y seguridad listos; faltan Lighthouse, prueba en teléfono, E2E (descarga de Chromium no autorizada) y hosting (D-001).
 - **Owner del panel:** creado (perfil activo). Registro público desactivado en Supabase.
-- **Base de datos:** vacía de datos de negocio (las pruebas se revierten o se limpian).
+- **Base de datos:** 8 migraciones. Sin productos reales todavía (2 de prueba del dueño); catálogo precargado de categorías, tallas y colores.
 - **Repositorio:** commits directos a `main` (D-015).
 
 ## Stack previsto
@@ -35,6 +36,7 @@ Node 24.19 · npm 11.17 · Git 2.56 · Docker 29.7 · Supabase CLI 3.4.0 (vía `
 
 ## Siguiente paso
 
+0. Revisar el rediseño en el navegador (panel y sitio en teléfono/tablet/escritorio) y pedir autorización para commit/push.
 1. El dueño carga sus primeros productos reales (categorías, colores, tallas, producto, variantes, fotos, entrada de mercancía).
 2. Con esos datos, verificar desde la interfaz ventas, devoluciones y apartados (F5-V) y revisar en un teléfono.
 3. Decidir hosting (D-001) y desplegar con autorización.

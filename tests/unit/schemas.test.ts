@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { productSchema, saleSchema, settingsSchema, stockEntrySchema } from '@/lib/validations/schemas';
+import { colorStockSchema, productColorsSchema, productSchema, saleSchema, settingsSchema, stockEntrySchema } from '@/lib/validations/schemas';
 
 const base = {
   name: 'Sudadera básica',
@@ -11,11 +11,13 @@ const base = {
 };
 
 describe('productSchema (datos tal como llegan del FormData)', () => {
-  it('acepta casillas sin marcar (no se envían)', () => {
-    const r = productSchema.safeParse({ ...base, is_active: 'on' });
+  it('acepta la casilla de novedad sin marcar y no toca la visibilidad (se decide en Inventario)', () => {
+    const r = productSchema.safeParse({ ...base, is_active: 'on', is_featured: 'on' });
     expect(r.success).toBe(true);
     if (r.success) {
-      expect(r.data).toMatchObject({ is_active: true, is_new: false, is_featured: false, sale_price: null, price: 350 });
+      expect(r.data).toMatchObject({ is_new: false, sale_price: null, price: 350 });
+      expect(r.data).not.toHaveProperty('is_active');
+      expect(r.data).not.toHaveProperty('is_featured');
     }
   });
 
@@ -66,5 +68,21 @@ describe('settingsSchema', () => {
     const r = settingsSchema.safeParse({ ...s, whatsapp_enabled: 'on', whatsapp_number: '+52 1 55 1234 5678' });
     expect(r.success).toBe(true);
     if (r.success) expect(r.data.whatsapp_number).toBe('+5215512345678');
+  });
+});
+
+describe('colores e inventario por color', () => {
+  const id = '0b0f7d2e-3c1a-4c55-9d9e-2f4b6a7c8d90';
+  it('un color sin precio propio queda en null; con precio se redondea', () => {
+    const r = productColorsSchema.safeParse({ product_id: id, colors: [{ color_id: id, price: '' }, { new_color: { name: 'Rojo vino', hex: '#7A2E35' }, price: '599.999' }] });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.colors.map((c) => c.price)).toEqual([null, 600]);
+  });
+  it('rechaza un color nuevo con tono inválido', () => {
+    expect(productColorsSchema.safeParse({ product_id: id, colors: [{ new_color: { name: 'X', hex: 'rojo' } }] }).success).toBe(false);
+  });
+  it('exige al menos una cantidad mayor que cero', () => {
+    expect(colorStockSchema.safeParse({ product_id: id, color_id: id, items: [{ size_id: id, quantity: 0 }] }).success).toBe(false);
+    expect(colorStockSchema.safeParse({ product_id: id, color_id: id, items: [{ size_id: id, quantity: '3' }] }).success).toBe(true);
   });
 });

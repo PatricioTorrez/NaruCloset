@@ -47,7 +47,7 @@ export async function getSettings(): Promise<PublicSettings> {
   return data;
 }
 
-export type CategoryOption = { id: string; name: string; slug: string };
+export type CategoryOption = { id: string; name: string; slug: string; icon?: string | null };
 export type ColorOption = { id: string; name: string; hex: string };
 export type SizeOption = { id: string; name: string };
 
@@ -62,7 +62,7 @@ export async function getFilterOptions(): Promise<{
 
   const supabase = createPublicClient();
   const [categories, colors, sizes] = await Promise.all([
-    supabase.from('categories').select('id, name, slug').eq('is_active', true).order('sort_order').order('name'),
+    supabase.from('categories').select('id, name, slug, icon').eq('is_active', true).order('sort_order').order('name'),
     supabase.from('colors').select('id, name, hex').eq('is_active', true).order('sort_order').order('name'),
     supabase.from('sizes').select('id, name').eq('is_active', true).order('sort_order').order('name'),
   ]);
@@ -86,7 +86,12 @@ export type CatalogQuery = {
   pageSize?: number;
 };
 
-export type CatalogItem = Database['public']['Functions']['catalog_products']['Returns'][number];
+type CatalogRow = Database['public']['Functions']['catalog_products']['Returns'][number];
+
+/** Color de un producto en el catálogo, con su precio vigente y su primera foto. */
+export type CatalogColor = { id: string; name: string; hex: string; price: number; thumb: string | null; image: string | null };
+
+export type CatalogItem = Omit<CatalogRow, 'colors'> & { colors: CatalogColor[] };
 
 export async function searchCatalog(query: CatalogQuery): Promise<{ items: CatalogItem[]; total: number }> {
   'use cache';
@@ -110,7 +115,11 @@ export async function searchCatalog(query: CatalogQuery): Promise<{ items: Catal
     p_offset: (page - 1) * pageSize,
   });
   if (error) throw new Error(`catalog: ${error.message}`);
-  return { items: data ?? [], total: Number(data?.[0]?.total_count ?? 0) };
+  const items = (data ?? []).map((row) => ({
+    ...row,
+    colors: (Array.isArray(row.colors) ? (row.colors as CatalogColor[]) : []).map((c) => ({ ...c, price: Number(c.price) })),
+  }));
+  return { items, total: Number(data?.[0]?.total_count ?? 0) };
 }
 
 export type ProductDetail = {
@@ -123,6 +132,8 @@ export type ProductDetail = {
   sale_price: number | null;
   is_new: boolean;
   category: CategoryOption;
+  /** Colores del producto en orden, con su precio vigente (propio, promoción o regular). */
+  colors: (ColorOption & { price: number; hasOwnPrice: boolean })[];
   images: { id: string; storage_path: string; thumb_path: string; alt_text: string | null; color_id: string | null; width: number; height: number }[];
   variants: {
     id: string;
@@ -141,7 +152,8 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
     .from('products')
     .select(
       `id, slug, name, description, audience, price, sale_price, is_new,
-       category:categories!inner(id, name, slug),
+       category:categories!inner(id, name, slug, icon),
+       colors:product_colors(price, sort_order, color:colors!inner(id, name, hex, sort_order)),
        images:product_images(id, storage_path, thumb_path, alt_text, color_id, width, height, sort_order, is_primary),
        variants:product_variants(id, stock_available, is_active,
          color:colors!inner(id, name, hex, sort_order),
@@ -161,9 +173,21 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
     .map((v) => ({ id: v.id, stock_available: v.stock_available ?? 0, color: v.color, size: v.size }))
     .sort((a, b) => a.color.sort_order - b.color.sort_order || a.size.sort_order - b.size.sort_order);
 
+  const base = Number(data.sale_price ?? data.price);
+  const colors = [...data.colors]
+    .sort((a, b) => a.sort_order - b.sort_order || a.color.sort_order - b.color.sort_order)
+    .map((c) => ({
+      id: c.color.id,
+      name: c.color.name,
+      hex: c.color.hex,
+      price: c.price === null ? base : Number(c.price),
+      hasOwnPrice: c.price !== null,
+    }));
+
   return {
     id: data.id,
     slug: data.slug,
+    colors,
     name: data.name,
     description: data.description,
     audience: data.audience,

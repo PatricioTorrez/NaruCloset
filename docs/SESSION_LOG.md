@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-11-27 — Sesión 2: colores por producto, inventario con ojo y rediseño público
+
+**Hecho**
+- Maqueta del sitio público con 2 opciones + la actual (`.superpowers/brainstorm/…`, ignorado en git). El dueño eligió Inicio B + Producto A.
+- Migración 8 (`product_colors`, `categories.icon`, precio por color, catálogo con colores, datos precargados) probada en transacción y aplicada con autorización. Nueva prueba pgTAP `product_colors.sql`.
+- `@lucide/lab` agregado (aprobado). Registro de íconos en `src/lib/icons.tsx`; selector de ícono en Categorías.
+- Producto: mosaicos de categoría y colección con ícono, Novedad, sección de colores con precio y fotos; edición con panel "Colores y fotografías". Se eliminó `variant-manager`.
+- Inventario: agrupado por producto y color, ojo de visibilidad con modal, "Agregar piezas" por talla (crea variantes y registra entrada).
+- Público: encabezado con buscador y píldoras, categorías en círculos, portada mosaico, tarjetas con cambio de color, barra inferior móvil; producto con galería apilada y tarjetas de color con foto y precio.
+
+**Verificación en Chrome (escritorio)**
+- Producto «PRUEBA - borrar sueter» creado con 2 colores (Negro, Rojo con precio propio $590) y una foto por color; nació oculto y abrió «Agregar piezas». Piezas registradas, ojo con modal, tarjeta con cambio de color (foto y precio), página de producto abriendo en el color elegido. Luego se **archivó** (queda en el historial de movimientos).
+- Corregido durante la prueba: cambios rápidos en las filas de color se pisaban (ahora se actualizan sobre el estado más reciente); el mosaico del inicio dejaba hueco con pocas prendas; «Todo» ahora lleva al inicio (pedido del dueño).
+
+- Pedido del dueño: editar existencias y quitar productos sin existencias. Migración 9 (`adjust_stock_many`) aplicada con autorización; «Editar existencias» por color con motivos rápidos y botón de quitar (con modal). Probado: el producto de prueba se restauró, se llevó a 0 y se quitó (quedó archivado por tener historial).
+
+- El dueño no encontraba «Editar existencias»: su producto no tenía colores. Ahora Inventario tiene «Agregar color» (destacado si el producto no tiene colores, y al pie de cada producto).
+
+**Pendiente**
+- Revisar en teléfono y tablet.
+- Commit y push (pedir autorización: un push a `main` puede desplegar).
+
+**Notas**
+- La extensión de Chrome volvió a fallar (capturas con timeout y luego desconexión). Las páginas públicas se verificaron por HTTP (200 con el contenido nuevo).
+- `supabase db push` en modo agente exige `--yes` aunque el dueño ya autorizó.
+
+---
+
 ## 2026-11-26 — Sesión 1 (continuación): verificación contra Supabase
 
 **Hecho**

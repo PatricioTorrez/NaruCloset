@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { SiteHeader, SiteHeaderStatic } from '@/components/public/site-header';
 import { SiteFooter } from '@/components/public/site-footer';
+import { MobileTabBar } from '@/components/public/mobile-tab-bar';
 import { getSettings } from '@/lib/queries/catalog';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -14,11 +15,16 @@ export default async function PublicLayout({ children }: { children: React.React
       >
         Saltar al contenido
       </a>
-      <Suspense fallback={<SiteHeaderStatic storeName={settings.store_name} />}>
-        <SiteHeader storeName={settings.store_name} />
+      <Suspense fallback={<SiteHeaderStatic storeName={settings.store_name} instagram={settings.instagram_handle} />}>
+        <SiteHeader storeName={settings.store_name} instagram={settings.instagram_handle} />
       </Suspense>
       <main id="contenido">{children}</main>
-      <SiteFooter settings={settings} />
+      <div className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0">
+        <SiteFooter settings={settings} />
+      </div>
+      <Suspense>
+        <MobileTabBar />
+      </Suspense>
     </>
   );
 }

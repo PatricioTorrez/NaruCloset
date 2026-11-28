@@ -5,15 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { ArrowLeft, ArrowRight, ImagePlus, Star } from 'lucide-react';
 import {
-  addProductImage,
   deleteProductImage,
   reorderImages,
   setPrimaryImage,
   updateProductImage,
 } from '@/lib/actions/catalog';
-import { createClient } from '@/lib/supabase/browser';
-import { processImage } from '@/lib/images/process';
-import { publicImageUrl, STORAGE_BUCKET } from '@/lib/env';
+import { uploadProductImage } from '@/lib/images/upload';
+import { publicImageUrl } from '@/lib/env';
 import { FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/misc';
 import { ConfirmAction } from '@/components/ui/confirm';
@@ -35,11 +33,18 @@ export function ImageManager({
   productName,
   images,
   colors,
+  uploadColorId = null,
+  inputId = 'image-upload',
+  uploadLabel = 'Subir fotografías',
 }: {
   productId: string;
   productName: string;
   images: Img[];
   colors: { id: string; name: string }[];
+  /** Color con el que se etiquetan las fotos nuevas (null = generales). */
+  uploadColorId?: string | null;
+  inputId?: string;
+  uploadLabel?: string;
 }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -49,36 +54,10 @@ export function ImageManager({
 
   async function upload(files: FileList) {
     setMsg(null);
-    const supabase = createClient();
     let done = 0;
     for (const file of Array.from(files).slice(0, 10)) {
       try {
-        setProgress(`Optimizando ${file.name}…`);
-        const processed = await processImage(file);
-        const imageId = crypto.randomUUID();
-        const base = `products/${productId}/${imageId}`;
-        const mainPath = `${base}.${processed.extension}`;
-        const thumbPath = `${base}_thumb.${processed.extension}`;
-        const contentType = processed.extension === 'webp' ? 'image/webp' : 'image/jpeg';
-
-        setProgress(`Subiendo ${file.name} (${Math.round(processed.main.size / 1024)} KB)…`);
-        const up1 = await supabase.storage.from(STORAGE_BUCKET).upload(mainPath, processed.main, { contentType, cacheControl: '31536000' });
-        if (up1.error) throw new Error('No se pudo subir la imagen. Verifique su sesión.');
-        const up2 = await supabase.storage.from(STORAGE_BUCKET).upload(thumbPath, processed.thumb, { contentType, cacheControl: '31536000' });
-        if (up2.error) {
-          await supabase.storage.from(STORAGE_BUCKET).remove([mainPath]);
-          throw new Error('No se pudo subir la miniatura.');
-        }
-
-        const r = await addProductImage({
-          product_id: productId,
-          storage_path: mainPath,
-          thumb_path: thumbPath,
-          width: processed.width,
-          height: processed.height,
-          alt_text: productName,
-        });
-        if (!r.ok) throw new Error(r.error);
+        await uploadProductImage(file, { productId, alt: productName, colorId: uploadColorId, onProgress: setProgress });
         done += 1;
       } catch (e) {
         setMsg({ tone: 'error', text: `${file.name}: ${e instanceof Error ? e.message : 'error desconocido'}` });
@@ -117,16 +96,16 @@ export function ImageManager({
           accept="image/jpeg,image/png,image/webp"
           multiple
           className="sr-only"
-          id="image-upload"
+          id={inputId}
           onChange={(e) => e.target.files?.length && upload(e.target.files)}
           disabled={Boolean(progress)}
         />
         <label
-          htmlFor="image-upload"
+          htmlFor={inputId}
           className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-md bg-espresso px-5 text-[0.9375rem] font-medium text-white hover:bg-[#433c38]"
         >
           <ImagePlus className="size-4" aria-hidden />
-          Subir fotografías
+          {uploadLabel}
         </label>
         <p className="text-sm text-muted">Se optimizan a WebP (~250 KB) sin recortar. Se muestran en marco 4:5.</p>
       </div>

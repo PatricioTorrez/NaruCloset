@@ -35,6 +35,13 @@ export const categorySchema = z.object({
   name: trimmed(60).min(1, 'Escriba el nombre.'),
   slug: slugSchema,
   description: optionalText(500),
+  icon: z
+    .string()
+    .trim()
+    .max(40)
+    .regex(/^([a-z0-9]+(-[a-z0-9]+)*)?$/, 'Ícono inválido.')
+    .optional()
+    .transform((v) => (v ? v : null)),
   sort_order: z.coerce.number().int().min(0).max(9999).default(0),
   is_active: checkbox,
 });
@@ -62,14 +69,45 @@ export const productSchema = z
       .union([z.literal(''), z.null(), money])
       .optional()
       .transform((v) => (v === '' || v === undefined || v === null || v === 0 ? null : v)),
-    is_active: checkbox,
     is_new: checkbox,
-    is_featured: checkbox,
   })
   .refine((p) => p.sale_price === null || p.sale_price < p.price, {
     path: ['sale_price'],
     message: 'El precio promocional debe ser menor que el precio regular.',
   });
+
+/** Colores de un producto: color existente o nuevo, con precio propio opcional. */
+export const productColorsSchema = z.object({
+  product_id: uuid,
+  colors: z
+    .array(
+      z.object({
+        color_id: uuid.nullable().optional(),
+        new_color: z
+          .object({
+            name: trimmed(40).min(1, 'Escriba el nombre del color.'),
+            hex: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Color inválido (#RRGGBB).'),
+          })
+          .nullable()
+          .optional(),
+        price: z
+          .union([z.literal(''), z.null(), money])
+          .optional()
+          .transform((v) => (v === '' || v === undefined || v === null || v === 0 ? null : v)),
+      }),
+    )
+    .max(30),
+});
+
+export const colorStockSchema = z.object({
+  product_id: uuid,
+  color_id: uuid,
+  notes: optionalText(1000),
+  items: z
+    .array(z.object({ size_id: uuid, quantity: z.coerce.number().int('Use números enteros.').min(0).max(10000) }))
+    .max(30)
+    .refine((items) => items.some((i) => i.quantity > 0), 'Escriba al menos una cantidad.'),
+});
 
 export const variantsCreateSchema = z.object({
   product_id: uuid,

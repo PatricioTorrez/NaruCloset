@@ -6,6 +6,7 @@ import { actionAdmin, NOT_AUTHORIZED, refreshCatalog } from './guard';
 import { friendlyError, type ActionResult } from '@/lib/errors';
 import {
   adjustSchema,
+  colorStockSchema,
   fieldErrors,
   reasonSchema,
   reservationSchema,
@@ -41,6 +42,46 @@ export async function registerStockEntry(input: z.input<typeof stockEntrySchema>
   if (error) return { ok: false, error: friendlyError(error) };
   refreshCatalog();
   return { ok: true, data: { id: data }, message: 'Entrada registrada. Las existencias se actualizaron.' };
+}
+
+/**
+ * Inventario por color: crea (con 0) las tallas que falten y registra una entrada de mercancía
+ * con la función transaccional; las existencias nunca se escriben directo.
+ */
+export async function addColorStock(input: z.input<typeof colorStockSchema>): Promise<ActionResult> {
+  if (!(await actionAdmin())) return NOT_AUTHORIZED;
+  const parsed = colorStockSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  const { product_id, color_id, items, notes } = parsed.data;
+  const lines = items.filter((i) => i.quantity > 0);
+
+  const supabase = await createClient();
+  const { data: existing, error: readError } = await supabase
+    .from('product_variants')
+    .select('id, size_id, is_active')
+    .eq('product_id', product_id)
+    .eq('color_id', color_id);
+  if (readError) return { ok: false, error: friendlyError(readError) };
+
+  const bySize = new Map((existing ?? []).map((v) => [v.size_id, v]));
+  const missing = lines.filter((l) => !bySize.has(l.size_id)).map((l) => ({ product_id, color_id, size_id: l.size_id }));
+  if (missing.length) {
+    const { data: created, error } = await supabase.from('product_variants').insert(missing).select('id, size_id, is_active');
+    if (error) return { ok: false, error: friendlyError(error) };
+    for (const v of created) bySize.set(v.size_id, v);
+  }
+  // Una talla que recibe mercancía vuelve a estar activa.
+  const inactive = lines.map((l) => bySize.get(l.size_id)!).filter((v) => !v.is_active).map((v) => v.id);
+  if (inactive.length) await supabase.from('product_variants').update({ is_active: true }).in('id', inactive);
+
+  const { error } = await supabase.rpc('register_stock_entry', {
+    p_items: lines.map((l) => ({ variant_id: bySize.get(l.size_id)!.id, quantity: l.quantity })),
+    p_notes: notes ?? undefined,
+  });
+  if (error) return { ok: false, error: friendlyError(error) };
+  refreshCatalog();
+  const total = lines.reduce((n, l) => n + l.quantity, 0);
+  return { ok: true, message: `${total} pieza(s) agregada(s) al inventario.` };
 }
 
 export async function registerSale(input: z.input<typeof saleSchema>): Promise<ActionResult<{ id: string }>> {
@@ -157,4 +198,29 @@ export async function adjustStock(input: z.input<typeof adjustSchema>): Promise<
   if (error) return { ok: false, error: friendlyError(error) };
   refreshCatalog();
   return { ok: true, message: 'Ajuste registrado en el historial.' };
+}
+
+const stockEditSchema = z.object({
+  items: z
+    .array(z.object({ variant_id: uuid, new_on_hand: z.coerce.number().int('Use números enteros.').min(0, 'No puede ser negativo.').max(100000) }))
+    .min(1)
+    .max(100),
+  reason: reasonSchema,
+  type: z.enum(['manual_adjustment', 'admin_correction']),
+});
+
+/** Corrige las existencias de varias tallas a la vez (solo owner). Todo o nada; queda en el historial. */
+export async function editColorStock(input: z.input<typeof stockEditSchema>): Promise<ActionResult> {
+  if (!(await actionAdmin(true))) return { ok: false, error: 'Solo el owner puede editar existencias.' };
+  const parsed = stockEditSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('adjust_stock_many', {
+    p_items: parsed.data.items,
+    p_reason: parsed.data.reason,
+    p_type: parsed.data.type,
+  });
+  if (error) return { ok: false, error: friendlyError(error) };
+  refreshCatalog();
+  return { ok: true, message: data === 1 ? 'Existencias actualizadas (1 talla).' : `Existencias actualizadas (${data} tallas).` };
 }

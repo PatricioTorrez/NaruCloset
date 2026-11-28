@@ -19,6 +19,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          icon: string | null
           id: string
           is_active: boolean
           name: string
@@ -29,6 +30,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          icon?: string | null
           id?: string
           is_active?: boolean
           name: string
@@ -39,6 +41,7 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          icon?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -171,6 +174,45 @@ export type Database = {
             columns: ["variant_id"]
             isOneToOne: false
             referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_colors: {
+        Row: {
+          color_id: string
+          created_at: string
+          price: number | null
+          product_id: string
+          sort_order: number
+        }
+        Insert: {
+          color_id: string
+          created_at?: string
+          price?: number | null
+          product_id: string
+          sort_order?: number
+        }
+        Update: {
+          color_id?: string
+          created_at?: string
+          price?: number | null
+          product_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_colors_color_id_fkey"
+            columns: ["color_id"]
+            isOneToOne: false
+            referencedRelation: "colors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_colors_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -911,6 +953,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      adjust_stock_many: {
+        Args: {
+          p_items: Json
+          p_reason: string
+          p_type?: Database["public"]["Enums"]["movement_type"]
+        }
+        Returns: number
+      }
       admin_dashboard: { Args: { p_days?: number }; Returns: Json }
       cancel_reservation: {
         Args: { p_reason: string; p_reservation_id: string }
@@ -936,14 +986,18 @@ export type Database = {
         }
         Returns: {
           audience: Database["public"]["Enums"]["product_audience"]
+          category_icon: string
           category_name: string
           category_slug: string
+          colors: Json
           created_at: string
           id: string
           is_featured: boolean
           is_new: boolean
           name: string
           price: number
+          price_max: number
+          price_min: number
           primary_image: string
           primary_image_alt: string
           primary_thumb: string

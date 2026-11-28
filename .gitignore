@@ -43,3 +43,6 @@ Thumbs.db
 
 # Claude Code local
 .claude/settings.local.json
+
+# Maquetas de diseño (brainstorming)
+.superpowers/

@@ -10,17 +10,20 @@ export const metadata: Metadata = { title: 'Nuevo producto' };
 
 export default async function NewProductPage() {
   const supabase = await createClient();
-  const { data: categories } = await supabase.from('categories').select('id, name').order('sort_order').order('name');
+  const [{ data: categories }, { data: colors }] = await Promise.all([
+    supabase.from('categories').select('id, name, icon').order('sort_order').order('name'),
+    supabase.from('colors').select('id, name, hex').eq('is_active', true).order('sort_order').order('name'),
+  ]);
 
   return (
     <>
       <PageHeader
         title="Nuevo producto"
         back={{ href: '/admin/productos', label: 'Productos' }}
-        description="Después de crearlo podrá agregar variantes de color y talla y sus fotografías."
+        description="Datos del modelo, sus colores y fotografías. Las tallas y cantidades se capturan después en Inventario; ahí también decide cuándo se muestra en la tienda."
       />
       <Panel>
-        <ProductForm categories={categories ?? []} />
+        <ProductForm categories={categories ?? []} colors={colors ?? []} />
       </Panel>
     </>
   );

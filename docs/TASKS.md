@@ -6,6 +6,7 @@
 
 ## En curso
 
+- [ ] R1-V — Rediseño 2026-11-27: verificado en Chrome (escritorio) de punta a punta con un producto de prueba (archivado después). **Falta revisarlo en teléfono y tablet**: Chrome no permitió angostar la ventana.
 - [ ] F5-V — Probar entradas, ventas, devoluciones y apartados desde la interfaz con los primeros productos reales.
 - [ ] F6-V — Revisión en teléfono real; Lighthouse; E2E Playwright (pendiente autorizar descarga de Chromium); decidir hosting (D-001).
 
@@ -22,6 +23,8 @@ _(ninguna)_
 
 ## Finalizadas
 
+- [x] R1-02 — Inventario: «Editar existencias» por color (owner, varias tallas en una operación con motivo; migración 9 `adjust_stock_many`) y botón para quitar un producto sin existencias (elimina o archiva si tiene historial). pgTAP 70/70; probado en Chrome (2026-11-27)
+- [x] R1-01 — Migración 8 aplicada: `product_colors` (precio opcional por color), `categories.icon`, precio vigente por color, catálogo público con colores; 12 categorías, 7 tallas y 10 colores precargados. pgTAP 63/63 (2026-11-27)
 - [x] F1-01 — Auditoría inicial del proyecto y plan por fases (2026-11-26)
 - [x] F1-02 — Archivos de contexto: `CLAUDE.md`, `PROJECT_CONTEXT.md`, `PROJECT_BRIEF.md`, `TASKS.md`, `DECISIONS.md`, `SESSION_LOG.md` (2026-11-26)
 - [x] F1-03 — Aprobación de decisiones D-001…D-011 (2026-11-26)

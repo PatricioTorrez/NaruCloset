@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { ProductPurchase } from '@/components/public/product-purchase';
-import { ProductGrid, ProductPrice } from '@/components/public/product-card';
+import { ProductGrid } from '@/components/public/product-card';
+import { CategoryIcon } from '@/lib/icons';
 import { Badge, Skeleton } from '@/components/ui/misc';
 import { getProductBySlug, getRelatedProducts, getSettings } from '@/lib/queries/catalog';
 import { env, publicImageUrl } from '@/lib/env';
@@ -55,7 +56,7 @@ async function ProductContent({ params }: { params: Promise<{ slug: string }> })
       '@type': 'Offer',
       url,
       priceCurrency: 'MXN',
-      price: (product.sale_price ?? product.price).toFixed(2),
+      price: Math.min(...(product.colors.length ? product.colors.map((c) => c.price) : [product.sale_price ?? product.price])).toFixed(2),
       availability: totalAvailable > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
     },
   };
@@ -90,18 +91,16 @@ async function ProductContent({ params }: { params: Promise<{ slug: string }> })
         lowStockThreshold={settings.low_stock_threshold}
         info={
           <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 empty:hidden">
               {totalAvailable === 0 && <Badge tone="soldout">Agotado</Badge>}
-              {product.is_new && <Badge tone="new">Nuevo</Badge>}
+              {product.is_new && <Badge tone="new">Novedad</Badge>}
               {product.sale_price !== null && <Badge tone="sale">Promoción</Badge>}
             </div>
             <h1 className="font-display text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] text-balance break-words">
               {product.name}
             </h1>
-            <div className="text-xl">
-              <ProductPrice price={product.price} salePrice={product.sale_price} />
-            </div>
-            <p className="text-sm text-muted">
+            <p className="flex items-center gap-2 text-sm text-muted">
+              <CategoryIcon icon={product.category.icon} className="size-4" />
               {product.category.name}, {AUDIENCE_LABEL[product.audience].toLowerCase()}
             </p>
           </div>
@@ -137,8 +136,8 @@ async function ProductContent({ params }: { params: Promise<{ slug: string }> })
       />
 
       {related.length > 0 && (
-        <section className="mt-24" aria-labelledby="relacionados">
-          <h2 id="relacionados" className="font-display mb-8 text-3xl">
+        <section className="mt-16 md:mt-24" aria-labelledby="relacionados">
+          <h2 id="relacionados" className="font-display mb-6 text-3xl">
             También te puede gustar
           </h2>
           <ProductGrid products={related} />

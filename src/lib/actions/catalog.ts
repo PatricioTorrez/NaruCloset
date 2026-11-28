@@ -9,6 +9,7 @@ import {
   categorySchema,
   colorSchema,
   fieldErrors,
+  productColorsSchema,
   productSchema,
   sizeSchema,
   uuid,
@@ -104,7 +105,10 @@ export async function deleteAttribute(kind: 'colors' | 'sizes', id: string): Pro
 }
 
 // ───────────────────────── Productos ─────────────────────────
-export async function saveProduct(_prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
+export async function saveProduct(
+  _prev: ActionResult<{ id: string }> | null,
+  fd: FormData,
+): Promise<ActionResult<{ id: string }>> {
   if (!(await actionAdmin())) return NOT_AUTHORIZED;
   const parsed = productSchema.safeParse(formObject(fd));
   if (!parsed.success) return { ok: false, error: 'Revise los campos marcados.', fieldErrors: fieldErrors(parsed.error) };
@@ -122,17 +126,140 @@ export async function saveProduct(_prev: ActionResult | null, fd: FormData): Pro
         : { ok: false, error: friendlyError(error) };
     }
     refreshCatalog(before?.slug, parsed.data.slug);
-    return { ok: true, message: 'Producto guardado.' };
+    return { ok: true, data: { id }, message: 'Producto guardado.' };
   }
 
-  const { data, error } = await supabase.from('products').insert(parsed.data).select('id').single();
+  // Un producto nuevo nace oculto; se muestra desde Inventario (ojo).
+  const { data, error } = await supabase.from('products').insert({ ...parsed.data, is_active: false }).select('id').single();
   if (error) {
     return error.code === '23505'
       ? { ok: false, error: 'Ese slug ya lo usa otro producto.', fieldErrors: { slug: ['Ya está en uso.'] } }
       : { ok: false, error: friendlyError(error) };
   }
   refreshCatalog();
-  redirect(`/admin/productos/${data.id}?creado=1`);
+  return { ok: true, data: { id: data.id }, message: 'Producto creado.' };
+}
+
+/** Muestra u oculta un producto en la tienda (ojo de Inventario). */
+export async function setProductVisibility(id: string, visible: boolean): Promise<ActionResult> {
+  if (!(await actionAdmin())) return NOT_AUTHORIZED;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('products')
+    .update({ is_active: visible })
+    .eq('id', uuid.parse(id))
+    .is('archived_at', null)
+    .select('slug')
+    .maybeSingle();
+  if (error) return { ok: false, error: friendlyError(error) };
+  if (!data) return { ok: false, error: 'El producto no existe o está archivado.' };
+  refreshCatalog(data.slug);
+  return { ok: true, message: visible ? 'El producto ya se muestra en la tienda.' : 'El producto quedó oculto.' };
+}
+
+/**
+ * Quita un producto sin existencias: si nunca tuvo movimientos se elimina por completo;
+ * si los tuvo, se archiva (sale de la tienda y del inventario, conserva el historial).
+ */
+export async function removeEmptyProduct(id: string): Promise<ActionResult<{ deleted: boolean }>> {
+  if (!(await actionAdmin())) return NOT_AUTHORIZED;
+  const productId = uuid.parse(id);
+  const supabase = await createClient();
+  const { data: variants, error: readError } = await supabase
+    .from('product_variants')
+    .select('stock_on_hand, stock_reserved')
+    .eq('product_id', productId);
+  if (readError) return { ok: false, error: friendlyError(readError) };
+  if ((variants ?? []).some((v) => v.stock_on_hand > 0 || v.stock_reserved > 0)) {
+    return { ok: false, error: 'El producto todavía tiene piezas o apartados.' };
+  }
+
+  const { data: images } = await supabase.from('product_images').select('storage_path, thumb_path').eq('product_id', productId);
+  const del = await supabase.from('products').delete().eq('id', productId).select('slug').maybeSingle();
+  if (!del.error) {
+    if (images?.length) await supabase.storage.from(STORAGE_BUCKET).remove(images.flatMap((i) => [i.storage_path, i.thumb_path]));
+    refreshCatalog(del.data?.slug);
+    return { ok: true, data: { deleted: true }, message: 'Producto eliminado.' };
+  }
+  if (del.error.code !== '23503') return { ok: false, error: friendlyError(del.error) };
+
+  // Tiene historial: se archiva.
+  const { data, error } = await supabase
+    .from('products')
+    .update({ archived_at: new Date().toISOString(), is_active: false })
+    .eq('id', productId)
+    .select('slug')
+    .single();
+  if (error) return { ok: false, error: friendlyError(error) };
+  refreshCatalog(data.slug);
+  return { ok: true, data: { deleted: false }, message: 'Producto archivado: ya no aparece en la tienda y su historial se conserva.' };
+}
+
+// ───────────────────────── Colores del producto ─────────────────────────
+/**
+ * Agrega colores a un producto (existentes o nuevos) o actualiza su precio propio.
+ * Devuelve los ids de color en el mismo orden recibido, para subir las fotos de cada uno.
+ */
+export async function saveProductColors(
+  input: z.input<typeof productColorsSchema>,
+): Promise<ActionResult<{ colorIds: string[] }>> {
+  if (!(await actionAdmin())) return NOT_AUTHORIZED;
+  const parsed = productColorsSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: z.prettifyError(parsed.error) };
+  const { product_id, colors } = parsed.data;
+  const supabase = await createClient();
+
+  const { data: existing } = await supabase.from('product_colors').select('color_id, sort_order').eq('product_id', product_id);
+  let nextOrder = Math.max(-1, ...(existing ?? []).map((c) => c.sort_order)) + 1;
+  const known = new Map((existing ?? []).map((c) => [c.color_id, c.sort_order]));
+
+  const colorIds: string[] = [];
+  for (const c of colors) {
+    let colorId = c.color_id ?? null;
+    if (!colorId && c.new_color) {
+      // Reutiliza un color con el mismo nombre si ya existe.
+      const { data: same } = await supabase.from('colors').select('id').ilike('name', c.new_color.name.replace(/[\\%_]/g, '\\$&')).maybeSingle();
+      if (same) colorId = same.id;
+      else {
+        const { data: created, error } = await supabase.from('colors').insert(c.new_color).select('id').single();
+        if (error) return { ok: false, error: friendlyError(error) };
+        colorId = created.id;
+      }
+    }
+    if (!colorId) return { ok: false, error: 'Elija un color.' };
+    if (colorIds.includes(colorId)) return { ok: false, error: 'Hay colores repetidos.' };
+    colorIds.push(colorId);
+
+    const sort_order = known.get(colorId) ?? nextOrder++;
+    const { error } = await supabase
+      .from('product_colors')
+      .upsert({ product_id, color_id: colorId, price: c.price, sort_order }, { onConflict: 'product_id,color_id' });
+    if (error) return { ok: false, error: friendlyError(error) };
+  }
+
+  await refreshProductById(supabase, product_id);
+  return { ok: true, data: { colorIds }, message: 'Colores guardados.' };
+}
+
+/** Quita un color del producto si todavía no tiene tallas registradas. Sus fotos quedan como generales. */
+export async function removeProductColor(productId: string, colorId: string): Promise<ActionResult> {
+  if (!(await actionAdmin())) return NOT_AUTHORIZED;
+  const pid = uuid.parse(productId);
+  const cid = uuid.parse(colorId);
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from('product_variants')
+    .select('id', { count: 'exact', head: true })
+    .eq('product_id', pid)
+    .eq('color_id', cid);
+  if (count) {
+    return { ok: false, error: 'Este color ya tiene tallas en el inventario. Desactive sus tallas en lugar de quitarlo.' };
+  }
+  const { error } = await supabase.from('product_colors').delete().eq('product_id', pid).eq('color_id', cid);
+  if (error) return { ok: false, error: friendlyError(error) };
+  await supabase.from('product_images').update({ color_id: null }).eq('product_id', pid).eq('color_id', cid);
+  await refreshProductById(supabase, pid);
+  return { ok: true, message: 'Color quitado.' };
 }
 
 export async function setProductArchived(id: string, archived: boolean): Promise<ActionResult> {

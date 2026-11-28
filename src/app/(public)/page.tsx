@@ -7,6 +7,8 @@ import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { ProductGrid } from '@/components/public/product-card';
 import { getFilterOptions, getSettings, searchCatalog } from '@/lib/queries/catalog';
 import { publicImageUrl } from '@/lib/env';
+import { AUDIENCES, CategoryIcon } from '@/lib/icons';
+import { cn } from '@/lib/cn';
 
 export default function HomePage() {
   return (
@@ -18,81 +20,116 @@ export default function HomePage() {
 
 function HomeSkeleton() {
   return (
-    <section className="container-page grid items-end gap-8 pt-8 pb-16 md:grid-cols-[1.1fr_1fr] md:gap-12 md:pt-10">
-      <div className="flex flex-col gap-4">
-        <Skeleton className="h-16 w-4/5" />
-        <Skeleton className="h-16 w-3/5" />
-        <Skeleton className="mt-4 h-12 w-64" />
+    <section className="container-page pt-5">
+      <div className="flex gap-3 overflow-hidden pb-2">
+        {Array.from({ length: 8 }, (_, i) => (
+          <Skeleton key={i} className="size-[67px] shrink-0 rounded-full" />
+        ))}
       </div>
-      <Skeleton className="aspect-[4/5] w-full rounded-sm md:aspect-auto md:h-[min(calc(100dvh-160px),720px)]" />
+      <Skeleton className="mt-4 aspect-[4/3] w-full rounded-2xl md:aspect-auto md:h-[min(calc(100dvh-220px),620px)]" />
     </section>
   );
 }
 
 async function HomeContent() {
-  const [settings, featured, latest, { categories }] = await Promise.all([
+  const [settings, latest, { categories }] = await Promise.all([
     getSettings(),
-    searchCatalog({ onlyFeatured: true, pageSize: 8 }),
-    searchCatalog({ sort: 'new', pageSize: 8 }),
+    searchCatalog({ sort: 'new', pageSize: 12 }),
     getFilterOptions(),
   ]);
 
-  const heroProduct = featured.items.find((p) => p.primary_image) ?? latest.items.find((p) => p.primary_image);
-  const heroSrc = publicImageUrl(heroProduct?.primary_image);
+  const withImage = latest.items.filter((p) => p.primary_image);
+  const hero = withImage[0];
+  const heroSrc = publicImageUrl(hero?.primary_image);
+  // Mosaico: una prenda por categoría (las más recientes con foto).
+  const tiles = withImage
+    .slice(1)
+    .filter((p, i, arr) => arr.findIndex((x) => x.category_slug === p.category_slug) === i)
+    .slice(0, 4);
   const newArrivals = latest.items.filter((p) => p.is_new);
   const isEmpty = latest.total === 0;
 
   return (
     <>
-      {/* Hero editorial */}
-      <section className="container-page grid items-end gap-8 pt-8 pb-16 md:grid-cols-[1.1fr_1fr] md:gap-12 md:pt-10 md:pb-24">
-        <div className="flex flex-col gap-6 md:pb-10">
-          <h1 className="font-display text-[clamp(2.75rem,8vw,5.5rem)] leading-[0.98] tracking-[-0.03em] text-balance">
-            {settings.slogan || settings.store_name}
-          </h1>
-          {settings.description && (
-            <p className="max-w-[46ch] text-[1.0625rem] text-muted">{settings.description}</p>
+      {categories.length > 0 && (
+        <nav aria-label="Categorías" className="container-page pt-5">
+          <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0">
+            {categories.map((c) => (
+              <li key={c.id} className="shrink-0">
+                <Link
+                  href={`/catalogo?categoria=${c.slug}`}
+                  className="group flex w-[76px] flex-col items-center gap-2 text-center text-xs md:w-[84px] md:text-[0.8125rem]"
+                >
+                  <span className="rounded-full bg-[conic-gradient(var(--color-rose),var(--color-mocha),var(--color-sand),var(--color-rose))] p-[2.5px] transition-transform duration-200 group-hover:scale-105">
+                    <span className="flex size-[62px] items-center justify-center rounded-full border-2 border-ivory bg-white md:size-[68px]">
+                      <CategoryIcon icon={c.icon} className="size-7" />
+                    </span>
+                  </span>
+                  <span className="leading-tight">{c.name}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+
+      {/* Portada en mosaico */}
+      <section
+        className={cn(
+          'container-page mt-4 grid grid-cols-2 gap-2.5 md:mt-6 md:gap-3',
+          // El mosaico se adapta a cuántas prendas con foto hay: 0 → portada sola; 1–2 → una columna; 3–4 → dos.
+          tiles.length === 0 ? 'md:grid-cols-1' : tiles.length <= 2 ? 'md:grid-cols-[2fr_1fr]' : 'md:grid-cols-[2fr_1fr_1fr]',
+          tiles.length === 1 ? 'md:grid-rows-1' : 'md:grid-rows-2',
+          tiles.length === 3 && '[&>a:last-child]:md:col-span-2',
+        )}
+      >
+        <div
+          className={cn(
+            'relative col-span-2 aspect-[4/3] overflow-hidden rounded-2xl bg-sand/60 md:col-span-1 md:aspect-auto md:min-h-[min(calc(100dvh-220px),620px)]',
+            tiles.length > 1 && 'md:row-span-2',
           )}
-          <div className="flex flex-wrap gap-3">
-            <ButtonLink href="/catalogo">Ver catálogo</ButtonLink>
-            <ButtonLink href="/novedades" variant="secondary">
-              Novedades
-            </ButtonLink>
-          </div>
-        </div>
-        <div className="relative aspect-[4/5] overflow-hidden rounded-sm bg-sand/60 md:aspect-auto md:h-[min(calc(100dvh-160px),720px)] md:min-h-[420px]">
-          {heroSrc && heroProduct ? (
-            <Link href={`/producto/${heroProduct.slug}`} aria-label={`Ver ${heroProduct.name}`}>
-              <Image
-                src={heroSrc}
-                alt={heroProduct.primary_image_alt || heroProduct.name}
-                fill
-                priority
-                sizes="(min-width: 768px) 45vw, 100vw"
-                className="object-cover"
-              />
+        >
+          {heroSrc && hero ? (
+            <Link href={`/producto/${hero.slug}`} aria-label={`Ver ${hero.name}`}>
+              <Image src={heroSrc} alt={hero.primary_image_alt || hero.name} fill priority sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
             </Link>
           ) : (
             <div className="flex size-full items-center justify-center">
-              <LogoStacked className="scale-150 text-espresso/50" />
+              <LogoStacked className="scale-150 text-espresso/40" />
             </div>
           )}
+          <div className="absolute inset-x-3 bottom-3 flex flex-col gap-3 rounded-xl bg-white/92 p-4 backdrop-blur-sm md:inset-x-5 md:bottom-5 md:max-w-md md:p-6">
+            <h1 className="font-display text-[clamp(1.75rem,4.5vw,2.75rem)] leading-[1.02] tracking-[-0.02em] text-balance">
+              {settings.slogan || settings.store_name}
+            </h1>
+            {settings.description && <p className="hidden text-[0.9375rem] text-muted md:block">{settings.description}</p>}
+            <div className="flex flex-wrap gap-2">
+              <ButtonLink href="/novedades" size="sm" className="h-10 px-4">
+                Ver novedades
+              </ButtonLink>
+              <ButtonLink href="/catalogo" size="sm" variant="ghost" className="h-10 px-4">
+                Todo el catálogo
+              </ButtonLink>
+            </div>
+          </div>
         </div>
-      </section>
-
-      {/* Colecciones con el mismo peso visual */}
-      <section aria-label="Colecciones" className="container-page grid gap-4 md:grid-cols-2">
-        {[
-          { href: '/mujer', label: 'Mujer', tone: 'bg-sand/70' },
-          { href: '/hombre', label: 'Hombre', tone: 'bg-white' },
-        ].map((c) => (
+        {tiles.map((p) => (
           <Link
-            key={c.href}
-            href={c.href}
-            className={`group flex aspect-[16/10] items-end justify-between rounded-sm border border-line p-6 md:p-8 ${c.tone}`}
+            key={p.id}
+            href={`/catalogo?categoria=${p.category_slug}`}
+            className={cn('group relative aspect-square overflow-hidden rounded-2xl bg-sand/50 md:aspect-auto', tiles.length % 2 === 1 && 'max-md:last:col-span-2 max-md:last:aspect-[2/1]')}
           >
-            <span className="font-display text-[clamp(2.5rem,6vw,4rem)] leading-none lowercase">{c.label}</span>
-            <span className="text-[0.9375rem] underline-offset-4 group-hover:underline">Ver colección</span>
+            <Image
+              src={publicImageUrl(p.primary_thumb ?? p.primary_image)!}
+              alt=""
+              fill
+              sizes="(min-width: 768px) 25vw, 50vw"
+              className="object-cover transition-transform duration-[400ms] ease-[var(--ease-out-soft)] group-hover:scale-[1.04]"
+            />
+            <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[0.8125rem]">
+              <CategoryIcon icon={p.category_icon} className="size-4" />
+              {p.category_name}
+            </span>
           </Link>
         ))}
       </section>
@@ -104,50 +141,37 @@ async function HomeContent() {
           description="Muy pronto encontrarás aquí las prendas de la temporada."
         />
       ) : (
-        <>
-          {(newArrivals.length > 0 ? newArrivals : latest.items).length > 0 && (
-            <section className="container-page mt-24">
-              <SectionHeading
-                title={newArrivals.length > 0 ? 'Recién llegado' : 'Lo más reciente'}
-                href="/novedades"
-                linkLabel="Ver novedades"
-              />
-              <ProductGrid products={(newArrivals.length > 0 ? newArrivals : latest.items).slice(0, 8)} />
-            </section>
-          )}
-
-          {featured.items.length > 0 && (
-            <section className="container-page mt-24">
-              <SectionHeading title="Favoritos de la casa" href="/catalogo" linkLabel="Ver todo" />
-              <ProductGrid products={featured.items} />
-            </section>
-          )}
-        </>
-      )}
-
-      {categories.length > 0 && (
-        <section className="container-page mt-24" aria-labelledby="categorias">
-          <h2 id="categorias" className="font-display mb-6 text-3xl md:text-4xl">
-            Categorías
-          </h2>
-          <ul className="flex flex-wrap gap-x-8 gap-y-3">
-            {categories.map((c) => (
-              <li key={c.id}>
-                <Link
-                  href={`/catalogo?categoria=${c.slug}`}
-                  className="font-display text-2xl text-muted transition-colors duration-200 hover:text-espresso md:text-3xl"
-                >
-                  {c.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <section className="container-page mt-12 md:mt-16">
+          <SectionHeading title={newArrivals.length > 0 ? 'Recién llegado' : 'Lo más reciente'} href="/novedades" linkLabel="Ver todo" />
+          <ProductGrid products={latest.items.slice(0, 8)} priorityCount={2} />
         </section>
       )}
 
-      <section className="container-page mt-24">
-        <div className="grid gap-8 rounded-sm bg-white px-6 py-12 md:grid-cols-[1fr_1fr] md:px-12 md:py-16">
-          <h2 className="font-display text-3xl leading-tight md:text-[2.75rem]">Ropa para el día a día, con personalidad propia.</h2>
+      {/* Colecciones */}
+      <section aria-label="Colecciones" className="container-page mt-12 grid gap-3 md:mt-16 md:grid-cols-3">
+        {(['women', 'men', 'unisex'] as const).map((key) => {
+          const a = AUDIENCES[key];
+          return (
+            <Link
+              key={key}
+              href={key === 'women' ? '/mujer' : key === 'men' ? '/hombre' : '/catalogo'}
+              className="flex items-center gap-4 rounded-xl border border-line bg-white px-5 py-4 transition-colors duration-200 hover:border-mocha"
+            >
+              <span className="flex size-12 items-center justify-center rounded-full bg-sand/70">
+                <a.Icon className="size-6" aria-hidden strokeWidth={1.5} />
+              </span>
+              <span>
+                <span className="font-display block text-2xl leading-tight">{a.label}</span>
+                <span className="text-[0.8125rem] text-muted">{key === 'unisex' ? 'Para todos' : 'Ver colección'}</span>
+              </span>
+            </Link>
+          );
+        })}
+      </section>
+
+      <section className="container-page mt-12 md:mt-16">
+        <div className="grid gap-6 rounded-2xl bg-white px-6 py-10 md:grid-cols-[1fr_1fr] md:px-12 md:py-14">
+          <h2 className="font-display text-3xl leading-tight md:text-[2.5rem]">Ropa para el día a día, con personalidad propia.</h2>
           <div className="flex flex-col items-start gap-5 text-muted">
             <p>
               Mira las prendas, revisa tallas, colores y disponibilidad, y escríbenos para apartar o coordinar la
@@ -177,9 +201,9 @@ async function HomeContent() {
 
 function SectionHeading({ title, href, linkLabel }: { title: string; href: string; linkLabel: string }) {
   return (
-    <div className="mb-8 flex items-end justify-between gap-4">
-      <h2 className="font-display text-3xl md:text-4xl">{title}</h2>
-      <Link href={href} className="shrink-0 py-2 text-[0.9375rem] underline underline-offset-4">
+    <div className="mb-5 flex items-end justify-between gap-4">
+      <h2 className="font-display text-[1.75rem] md:text-4xl">{title}</h2>
+      <Link href={href} className="shrink-0 py-2 text-[0.9375rem] text-muted hover:text-espresso">
         {linkLabel}
       </Link>
     </div>
